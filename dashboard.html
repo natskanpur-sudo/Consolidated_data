@@ -1,0 +1,6762 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Consolidated Data Management
+    </title>
+
+
+    <!-- Font Awesome -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+
+
+    <!-- SheetJS (Excel bulk upload ke liye) -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        :root {
+
+            --primary: #667eea;
+
+            --secondary: #764ba2;
+
+            --success: #10b981;
+
+            --warning: #f59e0b;
+
+            --danger: #ef4444;
+
+            --info: #3b82f6;
+
+            --dark: #1f2937;
+
+            --gray: #6b7280;
+
+            --light: #f9fafb;
+
+            --border: #e5e7eb;
+
+            --sidebar: 260px;
+
+        }
+
+
+        body {
+
+            font-family:
+                'Segoe UI',
+                Tahoma,
+                Geneva,
+                Verdana,
+                sans-serif;
+
+            background: var(--light);
+
+            color: var(--dark);
+
+        }
+
+
+        /* =================================================
+           SIDEBAR
+           ================================================= */
+
+        .sidebar {
+
+            position: fixed;
+
+            left: 0;
+            top: 0;
+
+            width: var(--sidebar);
+
+            height: 100vh;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    var(--primary),
+                    var(--secondary)
+                );
+
+            color: white;
+
+            padding: 20px 0;
+
+            box-shadow:
+                4px 0 12px rgba(0,0,0,.12);
+
+            z-index: 1000;
+
+            overflow-y: auto;
+
+        }
+
+
+        .sidebar-header {
+
+            padding:
+                0 20px 20px;
+
+            border-bottom:
+                1px solid rgba(255,255,255,.15);
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .sidebar-logo {
+
+            width: 60px;
+            height: 60px;
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 8px;
+
+            margin-bottom: 15px;
+
+        }
+
+
+        .sidebar-logo img {
+
+            width: 100%;
+            height: 100%;
+
+            object-fit: contain;
+
+        }
+
+
+        .sidebar-title {
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            line-height: 1.4;
+
+        }
+
+
+        .sidebar-user {
+
+            margin:
+                0 15px 20px;
+
+            padding: 15px;
+
+            background:
+                rgba(255,255,255,.12);
+
+            border-radius: 10px;
+
+        }
+
+
+        .user-avatar {
+
+            width: 45px;
+            height: 45px;
+
+            background: white;
+
+            color: var(--primary);
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 20px;
+
+            font-weight: 700;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .user-name {
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            word-break: break-all;
+
+        }
+
+
+        .user-role {
+
+            margin-top: 4px;
+
+            font-size: 12px;
+
+            opacity: .8;
+
+        }
+
+
+        .sidebar-menu {
+
+            list-style: none;
+
+            padding: 0 10px;
+
+        }
+
+
+        .menu-item {
+
+            margin-bottom: 5px;
+
+        }
+
+
+        .menu-link {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 12px 15px;
+
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+        }
+
+
+        .menu-link:hover {
+
+            background:
+                rgba(255,255,255,.15);
+
+        }
+
+
+        .menu-link.active {
+
+            background:
+                rgba(255,255,255,.22);
+
+            font-weight: 700;
+
+        }
+
+
+        .menu-link i {
+
+            width: 22px;
+
+            text-align: center;
+
+        }
+
+
+        .logout-btn {
+
+            width:
+                calc(100% - 20px);
+
+            margin:
+                20px 10px;
+
+            padding: 12px 15px;
+
+            background:
+                rgba(255,255,255,.15);
+
+            border:
+                1px solid rgba(255,255,255,.25);
+
+            color: white;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: 600;
+
+            text-align: left;
+
+        }
+
+
+        /* =================================================
+           MAIN
+           ================================================= */
+
+        .main-content {
+
+            margin-left:
+                var(--sidebar);
+
+            padding: 25px;
+
+            min-height: 100vh;
+
+        }
+
+
+        .top-bar {
+
+            background: white;
+
+            padding: 20px 25px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,.05);
+
+            margin-bottom: 20px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 20px;
+
+        }
+
+
+        .page-title {
+
+            font-size: 26px;
+
+            font-weight: 700;
+
+        }
+
+
+        .breadcrumb {
+
+            color: var(--gray);
+
+            font-size: 13px;
+
+            margin-top: 5px;
+
+        }
+
+
+        .top-actions {
+
+            display: flex;
+
+            gap: 10px;
+
+        }
+
+
+        .btn {
+
+            border: none;
+
+            border-radius: 8px;
+
+            padding: 10px 16px;
+
+            cursor: pointer;
+
+            font-weight: 600;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+        }
+
+
+        .btn-primary {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    var(--secondary)
+                );
+
+            color: white;
+
+        }
+
+
+        .btn-success {
+
+            background: var(--success);
+
+            color: white;
+
+        }
+
+
+        .btn-danger {
+
+            background: var(--danger);
+
+            color: white;
+
+        }
+
+
+        .btn-secondary {
+
+            background: #e5e7eb;
+
+            color: #374151;
+
+        }
+
+
+        .btn:hover {
+
+            opacity: .9;
+
+        }
+
+
+        /* =================================================
+           LOADING
+           ================================================= */
+
+        .loading-container {
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 70px 20px;
+
+            text-align: center;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,.05);
+
+        }
+
+
+        .spinner {
+
+            width: 50px;
+            height: 50px;
+
+            border:
+                5px solid #e5e7eb;
+
+            border-top-color:
+                var(--primary);
+
+            border-radius: 50%;
+
+            animation:
+                spin 1s linear infinite;
+
+            margin: auto;
+
+        }
+
+
+        @keyframes spin {
+
+            to {
+                transform: rotate(360deg);
+            }
+
+        }
+
+
+        /* =================================================
+           ERROR
+           ================================================= */
+
+        .error-box {
+
+            background: #fef2f2;
+
+            border:
+                1px solid #fecaca;
+
+            color: #991b1b;
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        /* =================================================
+           STATS
+           ================================================= */
+
+        .stats-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(220px, 1fr)
+                );
+
+            gap: 18px;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .stat-card {
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 20px;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,.05);
+
+            border-left: 5px solid var(--primary);
+
+        }
+
+
+        .stat-label {
+
+            color: var(--gray);
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .stat-value {
+
+            font-size: 30px;
+
+            font-weight: 700;
+
+            margin-top: 5px;
+
+        }
+
+
+        /* =================================================
+           SECTION
+           ================================================= */
+
+        .content-section {
+
+            display: none;
+
+            background: white;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,.05);
+
+            overflow: hidden;
+
+        }
+
+
+        .content-section.active {
+
+            display: block;
+
+        }
+
+
+        .section-header {
+
+            padding: 20px 25px;
+
+            border-bottom:
+                1px solid var(--border);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+        }
+
+
+        .section-title {
+
+            font-size: 19px;
+
+            font-weight: 700;
+
+        }
+
+
+        .section-title i {
+
+            color: var(--primary);
+
+            margin-right: 8px;
+
+        }
+
+
+        .section-actions {
+
+            display: flex;
+
+            gap: 8px;
+
+        }
+
+
+        .search-box {
+
+            padding: 10px 14px;
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 8px;
+
+            width: 250px;
+
+            outline: none;
+
+        }
+
+
+        .search-box:focus {
+
+            border-color:
+                var(--primary);
+
+        }
+
+
+        .section-body {
+
+            padding: 20px;
+
+        }
+
+
+        /* =================================================
+           TABLE
+           ================================================= */
+
+        .table-container {
+
+            overflow-x: auto;
+
+            max-height: 65vh;
+
+        }
+
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 900px;
+
+        }
+
+
+        th {
+
+            position: sticky;
+
+            top: 0;
+
+            background: #eef2ff;
+
+            color: #374151;
+
+            padding: 12px 10px;
+
+            text-align: left;
+
+            font-size: 12px;
+
+            border-bottom:
+                2px solid #d1d5db;
+
+            z-index: 2;
+
+            white-space: nowrap;
+
+        }
+
+
+        td {
+
+            padding: 11px 10px;
+
+            border-bottom:
+                1px solid #edf0f3;
+
+            font-size: 13px;
+
+            white-space: nowrap;
+
+        }
+
+
+        tbody tr:hover {
+
+            background: #f9fafb;
+
+        }
+
+
+        .action-cell {
+
+            text-align: center;
+
+            white-space: nowrap;
+
+        }
+
+
+        .small-btn {
+
+            border: none;
+
+            border-radius: 6px;
+
+            padding: 6px 9px;
+
+            cursor: pointer;
+
+            margin: 2px;
+
+        }
+
+
+        .edit-btn {
+
+            background: #dbeafe;
+
+            color: #1d4ed8;
+
+        }
+
+
+        .delete-btn {
+
+            background: #fee2e2;
+
+            color: #b91c1c;
+
+        }
+
+
+        .view-badge {
+
+            display: inline-block;
+
+            background: #f3f4f6;
+
+            color: #6b7280;
+
+            padding: 4px 8px;
+
+            border-radius: 15px;
+
+            font-size: 11px;
+
+            font-weight: 600;
+
+        }
+
+
+        .edit-badge {
+
+            display: inline-block;
+
+            background: #dcfce7;
+
+            color: #166534;
+
+            padding: 4px 8px;
+
+            border-radius: 15px;
+
+            font-size: 11px;
+
+            font-weight: 600;
+
+        }
+
+
+        /* =================================================
+           MODAL
+           ================================================= */
+
+        .modal {
+
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                rgba(0,0,0,.55);
+
+            z-index: 5000;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+        }
+
+
+        .modal.show {
+
+            display: flex;
+
+        }
+
+
+        .modal-box {
+
+            background: white;
+
+            width: 100%;
+
+            max-width: 850px;
+
+            max-height: 90vh;
+
+            overflow-y: auto;
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 20px 60px rgba(0,0,0,.25);
+
+        }
+
+
+        .modal-header {
+
+            padding: 20px;
+
+            border-bottom:
+                1px solid var(--border);
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+
+        .modal-header h2 {
+
+            font-size: 20px;
+
+        }
+
+
+        .close-btn {
+
+            border: none;
+
+            background: transparent;
+
+            font-size: 24px;
+
+            cursor: pointer;
+
+            color: #6b7280;
+
+        }
+
+
+        .modal-body {
+
+            padding: 20px;
+
+        }
+
+
+        .form-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0, 1fr)
+                );
+
+            gap: 15px;
+
+        }
+
+
+        .field label {
+
+            display: block;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            margin-bottom: 6px;
+
+        }
+
+
+        .field input,
+
+        .field textarea,
+
+        .field select {
+
+            width: 100%;
+
+            padding: 10px 12px;
+
+            border:
+                1px solid #d1d5db;
+
+            border-radius: 7px;
+
+            outline: none;
+
+            font-size: 14px;
+
+        }
+
+
+        .field input:focus,
+
+        .field textarea:focus,
+
+        .field select:focus {
+
+            border-color:
+                var(--primary);
+
+        }
+
+
+        .modal-footer {
+
+            padding: 15px 20px;
+
+            border-top:
+                1px solid var(--border);
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            gap: 10px;
+
+        }
+
+
+        .no-data {
+
+            padding: 60px 20px;
+
+            text-align: center;
+
+            color: #9ca3af;
+
+        }
+
+
+        .no-data i {
+
+            font-size: 40px;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        /* =================================================
+           BULK UPLOAD
+           ================================================= */
+
+        .btn-bulk {
+
+            background: #eef2ff;
+
+            color: var(--primary);
+
+            border: 1px solid #c7d2fe;
+
+        }
+
+
+        .btn-bulk.active-filter {
+
+            background: var(--warning);
+
+            color: white;
+
+            border-color: var(--warning);
+
+        }
+
+
+        .btn-export {
+
+            background: #ecfdf5;
+
+            color: #047857;
+
+            border: 1px solid #a7f3d0;
+
+        }
+
+
+        .bulk-step {
+
+            display: none;
+
+        }
+
+
+        .bulk-step.active {
+
+            display: block;
+
+        }
+
+
+        .dropzone {
+
+            border: 2px dashed #c7d2fe;
+
+            border-radius: 12px;
+
+            padding: 40px 20px;
+
+            text-align: center;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+            background: #f9fafb;
+
+        }
+
+
+        .dropzone:hover {
+
+            border-color: var(--primary);
+
+            background: #eef2ff;
+
+        }
+
+
+        .dropzone i {
+
+            font-size: 34px;
+
+            color: var(--primary);
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .dropzone p {
+
+            color: var(--gray);
+
+            font-size: 13px;
+
+            margin-top: 6px;
+
+        }
+
+
+        .file-chosen {
+
+            margin-top: 15px;
+
+            padding: 10px 14px;
+
+            background: #f3f4f6;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+        }
+
+
+        .summary-chips {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 10px;
+
+            margin-bottom: 15px;
+
+        }
+
+
+        .chip {
+
+            padding: 8px 14px;
+
+            border-radius: 8px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+        }
+
+
+        .chip-update {
+
+            background: #dcfce7;
+
+            color: #166534;
+
+        }
+
+
+        .chip-dup {
+
+            background: #fef3c7;
+
+            color: #92400e;
+
+        }
+
+
+        .chip-notfound {
+
+            background: #fee2e2;
+
+            color: #b91c1c;
+
+        }
+
+
+        .chip-total {
+
+            background: #e5e7eb;
+
+            color: #374151;
+
+        }
+
+
+        .preview-note {
+
+            font-size: 12px;
+
+            color: var(--gray);
+
+            margin: 10px 0;
+
+        }
+
+
+        .warning-banner {
+
+            background: #fffbeb;
+
+            border: 1px solid #fde68a;
+
+            color: #92400e;
+
+            padding: 14px 16px;
+
+            border-radius: 10px;
+
+            font-size: 13px;
+
+            margin-bottom: 15px;
+
+        }
+
+
+        .progress-wrap {
+
+            background: #e5e7eb;
+
+            border-radius: 20px;
+
+            height: 14px;
+
+            overflow: hidden;
+
+            margin: 20px 0 10px;
+
+        }
+
+
+        .progress-fill {
+
+            height: 100%;
+
+            width: 0%;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    var(--secondary)
+                );
+
+            transition: width .2s;
+
+        }
+
+
+        .progress-text {
+
+            text-align: center;
+
+            font-size: 13px;
+
+            color: var(--gray);
+
+        }
+
+
+        .result-icon {
+
+            text-align: center;
+
+            font-size: 46px;
+
+            color: var(--success);
+
+            margin-bottom: 10px;
+
+        }
+
+
+        /* =================================================
+           CUSTOM ALERT (professional, centered — replaces
+           browser alert() dialog boxes)
+           ================================================= */
+
+        .custom-alert-overlay {
+
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0,0,0,.55);
+
+            z-index: 9000;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+        }
+
+        .custom-alert-overlay.show {
+
+            display: flex;
+
+        }
+
+        .custom-alert-box {
+
+            background: white;
+
+            width: 100%;
+
+            max-width: 420px;
+
+            border-radius: 14px;
+
+            box-shadow: 0 20px 60px rgba(0,0,0,.3);
+
+            padding: 30px 26px 24px;
+
+            text-align: center;
+
+            animation: alertPop .15s ease;
+
+        }
+
+        @keyframes alertPop {
+
+            from { transform: scale(.92); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+
+        }
+
+        .custom-alert-icon {
+
+            width: 54px;
+            height: 54px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 24px;
+
+            margin: 0 auto 16px;
+
+        }
+
+        .custom-alert-icon.success { background:#dcfce7; color:#166534; }
+        .custom-alert-icon.error   { background:#fee2e2; color:#b91c1c; }
+        .custom-alert-icon.warning { background:#fef3c7; color:#92400e; }
+        .custom-alert-icon.info    { background:#dbeafe; color:#1d4ed8; }
+
+        .custom-alert-title {
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            margin-bottom: 8px;
+
+        }
+
+        .custom-alert-message {
+
+            font-size: 13.5px;
+
+            color: #4b5563;
+
+            line-height: 1.6;
+
+            white-space: pre-line;
+
+            margin-bottom: 22px;
+
+        }
+
+        .custom-alert-btn {
+
+            border: none;
+
+            border-radius: 8px;
+
+            padding: 10px 30px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    var(--secondary)
+                );
+
+            color: white;
+
+        }
+
+
+
+        /* =================================================
+           ADMIN DASHBOARD (summary cards + bars)
+           ================================================= */
+
+        .admin-dash { display: block; margin-bottom: 20px; }
+
+        .dash-top-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .dash-top-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid;
+        }
+
+        .dash-top-card.blue   { background: #eff6ff; border-color: #bfdbfe; }
+        .dash-top-card.green  { background: #ecfdf5; border-color: #a7f3d0; }
+        .dash-top-card.purple { background: #f5f3ff; border-color: #ddd6fe; }
+        .dash-top-card.orange { background: #fffbeb; border-color: #fde68a; }
+
+        .dash-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .dash-icon.blue   { background: #3b6fd8; }
+        .dash-icon.green  { background: #2f9e5b; }
+        .dash-icon.purple { background: #7c5cdb; }
+        .dash-icon.orange { background: #f59e0b; }
+
+        .dash-top-title { font-size: 13px; font-weight: 700; color: #374151; }
+        .dash-top-total { font-size: 28px; font-weight: 700; line-height: 1.2; }
+        .dash-top-line  { font-size: 12px; color: #4b5563; margin-top: 3px; }
+        .dash-top-line b { margin-left: 6px; color: #111827; }
+
+        .dash-panel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .dash-panel {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+
+        .dash-panel-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .dash-panel-title { font-size: 17px; font-weight: 700; flex: 1; }
+
+        .dash-chip {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .dash-chip.blue   { background: #eff6ff; color: #1d4ed8; }
+        .dash-chip.green  { background: #ecfdf5; color: #047857; }
+        .dash-chip.purple { background: #f5f3ff; color: #6d28d9; }
+
+        .dash-bar-row { margin-bottom: 16px; }
+
+        .dash-bar-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 6px;
+            gap: 10px;
+        }
+
+        .dash-bar-label { font-size: 14px; font-weight: 700; }
+        .dash-bar-sub   { font-size: 12px; color: var(--gray); }
+        .dash-bar-value { font-size: 13px; font-weight: 700; }
+
+        .dash-bar-track {
+            background: #e5e7eb;
+            border-radius: 20px;
+            height: 9px;
+            overflow: hidden;
+        }
+
+        .dash-bar-fill { height: 100%; border-radius: 20px; }
+
+        .dash-empty { color: #9ca3af; font-size: 13px; padding: 10px 0; }
+        /* =================================================
+   OUTREACH DASHBOARD
+   ================================================= */
+
+.od-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.od-panel {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+
+.od-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.od-head-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #3b6fd8;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.od-head-title {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e3a8a;
+}
+
+.od-total-chip {
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ---- status overview ---- */
+
+.od-status-wrap {
+    display: flex;
+    gap: 22px;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+.od-donut-col {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin: 0 auto;
+}
+
+.od-donut {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.od-donut-hole {
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 1px #eef2f7;
+}
+
+.od-donut-total {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.od-donut-sub {
+    font-size: 11px;
+    color: var(--gray);
+}
+
+.od-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    color: #4b5563;
+}
+
+.od-legend div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.od-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.od-breakdown {
+    flex: 1;
+    min-width: 220px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: #fafbff;
+}
+
+.od-breakdown-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.od-table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+}
+
+.od-table th {
+    position: static;
+    background: transparent;
+    font-size: 12px;
+    color: var(--gray);
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--border);
+}
+
+.od-table td {
+    padding: 14px 6px;
+    font-size: 13px;
+    border-bottom: 1px solid #edf0f3;
+}
+
+.od-table th:nth-child(n+2),
+.od-table td:nth-child(n+2) {
+    text-align: right;
+}
+
+.od-table tr:last-child td {
+    border-bottom: none;
+}
+
+.od-status-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ---- horizontal bars ---- */
+
+.od-bar-row {
+    display: grid;
+    grid-template-columns: minmax(90px, 170px) 1fr 60px;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 11px;
+    font-size: 12.5px;
+}
+
+.od-bar-label {
+    color: #374151;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.od-bar-track {
+    background: #eef2f7;
+    border-radius: 20px;
+    height: 9px;
+    overflow: hidden;
+}
+
+.od-bar-fill {
+    height: 100%;
+    border-radius: 20px;
+    min-width: 5px;
+}
+
+.od-bar-value {
+    text-align: right;
+    font-weight: 600;
+    color: #374151;
+}
+/* =================================================
+   TABLE FILTER BAR
+   ================================================= */
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-end;
+    padding: 14px 16px;
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 180px;
+}
+
+.filter-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.filter-group select {
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+}
+
+.filter-group select:focus {
+    border-color: var(--primary);
+}
+
+.filter-count {
+    margin-left: auto;
+    align-self: center;
+    font-size: 12px;
+    color: var(--gray);
+    font-weight: 600;
+}
+        /* =================================================
+           MOBILE
+           ================================================= */
+
+        .mobile-toggle {
+
+            display: none;
+
+            position: fixed;
+
+            top: 15px;
+
+            left: 15px;
+
+            z-index: 3000;
+
+            width: 42px;
+
+            height: 42px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: var(--primary);
+
+            color: white;
+
+            font-size: 18px;
+
+        }
+
+
+        @media(max-width:1024px) {
+
+            .sidebar {
+
+                transform:
+                    translateX(-100%);
+
+                transition: .25s;
+
+            }
+
+
+            .sidebar.open {
+
+                transform:
+                    translateX(0);
+
+            }
+
+
+            .main-content {
+
+                margin-left: 0;
+
+            }
+
+
+            .mobile-toggle {
+
+                display: block;
+
+            }
+
+        }
+
+
+        @media(max-width:700px) {
+
+            .main-content {
+
+                padding: 15px;
+
+            }
+
+
+            .top-bar {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+
+            }
+
+
+            .top-actions {
+
+                width: 100%;
+
+            }
+
+
+            .top-actions .btn {
+
+                flex: 1;
+
+                justify-content: center;
+
+            }
+
+
+            .section-header {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+
+            }
+
+
+            .section-actions {
+
+                width: 100%;
+
+                flex-direction: column;
+
+            }
+
+
+            .search-box {
+
+                width: 100%;
+
+            }
+
+
+            .form-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     MOBILE MENU
+     ===================================================== -->
+
+<button
+    class="mobile-toggle"
+    onclick="toggleSidebar()"
+>
+
+    <i class="fas fa-bars"></i>
+
+</button>
+
+
+<!-- =====================================================
+     SIDEBAR
+     ===================================================== -->
+
+<aside
+    class="sidebar"
+    id="sidebar"
+>
+
+
+    <div class="sidebar-header">
+
+        <div class="sidebar-logo">
+
+            <img
+                src="boat-logo.png"
+                alt="BOAT"
+            >
+
+        </div>
+
+        <div class="sidebar-title">
+
+            Consolidated Data
+            Management Portal
+
+        </div>
+
+    </div>
+
+
+    <div class="sidebar-user">
+
+        <div
+            class="user-avatar"
+            id="userAvatar"
+        >
+            A
+        </div>
+
+        <div
+            class="user-name"
+            id="sidebarUserName"
+        >
+            Loading...
+        </div>
+
+        <div
+            class="user-role"
+            id="sidebarUserRole"
+        >
+            User
+        </div>
+
+    </div>
+
+
+    <ul class="sidebar-menu">
+
+
+        <li class="menu-item" data-module="dashboard">
+
+            <a
+                class="menu-link active"
+                onclick="showSection('dashboard', this)"
+            >
+
+                <i class="fas fa-th-large"></i>
+
+                <span>Dashboard</span>
+
+            </a>
+
+        </li>
+
+
+        <li class="menu-item" data-module="establishments">
+
+            <a
+                class="menu-link"
+                onclick="showSection('establishments', this)"
+            >
+
+                <i class="fas fa-building"></i>
+
+                <span>Master ESTB. List</span>
+
+            </a>
+
+        </li>
+
+
+        <li class="menu-item" data-module="contracts">
+
+            <a
+                class="menu-link"
+                onclick="showSection('contracts', this)"
+            >
+
+                <i class="fas fa-file-contract"></i>
+
+                <span>Master Contracts</span>
+
+            </a>
+
+        </li>
+
+
+        <li class="menu-item" data-module="authorizations">
+
+            <a
+                class="menu-link"
+                onclick="showSection('authorizations', this)"
+            >
+
+                <i class="fas fa-check-circle"></i>
+
+                <span>Master Authu.</span>
+
+            </a>
+
+        </li>
+
+
+        <li class="menu-item" data-module="dbt">
+
+            <a
+                class="menu-link"
+                onclick="showSection('dbt', this)"
+            >
+
+                <i class="fas fa-money-bill-wave"></i>
+
+                <span>Master DBT</span>
+
+            </a>
+
+        </li>
+
+    </ul>
+
+
+    <button
+        class="logout-btn"
+        onclick="logout()"
+    >
+
+        <i class="fas fa-sign-out-alt"></i>
+
+        &nbsp; Logout
+
+    </button>
+
+
+</aside>
+
+
+<!-- =====================================================
+     MAIN CONTENT
+     ===================================================== -->
+
+<main class="main-content">
+
+
+    <div class="top-bar">
+
+        <div>
+
+            <h1
+                class="page-title"
+                id="pageTitle"
+            >
+                Dashboard
+            </h1>
+
+            <div class="breadcrumb">
+
+                Home
+
+                <i class="fas fa-chevron-right"></i>
+
+                <span id="breadcrumbCurrent">
+                    Dashboard
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="top-actions">
+
+            <button
+                class="btn btn-primary"
+                onclick="refreshData()"
+            >
+
+                <i class="fas fa-sync-alt"></i>
+
+                Refresh
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         LOADING
+         ================================================= -->
+
+    <div
+        id="loadingContainer"
+        class="loading-container"
+    >
+
+        <div class="spinner"></div>
+
+        <p style="margin-top:15px;color:#6b7280;">
+            Loading data from Google Sheets...
+        </p>
+
+    </div>
+
+
+    <!-- =================================================
+         ERROR
+         ================================================= -->
+
+    <div
+        id="errorContainer"
+        style="display:none;"
+    ></div>
+
+
+    <!-- =================================================
+         DASHBOARD
+         ================================================= -->
+
+    <div
+        id="dashboardSection"
+        class="content-section active"
+    >
+
+        <div class="section-header">
+
+            <div class="section-title">
+
+                <i class="fas fa-chart-pie"></i>
+
+                Overview
+
+            </div>
+
+        </div>
+
+
+        <div class="section-body">
+
+            <div
+                class="stats-grid"
+                id="statsContainer"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         ESTABLISHMENTS
+         ================================================= -->
+
+    <div
+        id="establishmentsSection"
+        class="content-section"
+    ></div>
+
+
+    <!-- =================================================
+         CONTRACTS
+         ================================================= -->
+
+    <div
+        id="contractsSection"
+        class="content-section"
+    ></div>
+
+
+    <!-- =================================================
+         AUTHORIZATIONS
+         ================================================= -->
+
+    <div
+        id="authorizationsSection"
+        class="content-section"
+    ></div>
+
+
+    <!-- =================================================
+         DBT
+         ================================================= -->
+
+    <div
+        id="dbtSection"
+        class="content-section"
+    ></div>
+
+
+</main>
+
+
+<!-- =====================================================
+     EDIT / ADD MODAL
+     ===================================================== -->
+
+<div
+    class="modal"
+    id="dataModal"
+>
+
+    <div class="modal-box">
+
+
+        <div class="modal-header">
+
+            <h2 id="modalTitle">
+                Edit Record
+            </h2>
+
+            <button
+                class="close-btn"
+                onclick="closeModal()"
+            >
+                &times;
+            </button>
+
+        </div>
+
+
+        <div
+            class="modal-body"
+            id="modalBody"
+        ></div>
+
+
+        <div class="modal-footer">
+
+            <button
+                class="btn btn-secondary"
+                onclick="closeModal()"
+            >
+                Cancel
+            </button>
+
+            <button
+                class="btn btn-primary"
+                id="saveBtn"
+                onclick="saveRecord()"
+            >
+                <i class="fas fa-save"></i>
+                Save
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     BULK UPLOAD MODAL
+     ===================================================== -->
+
+<div
+    class="modal"
+    id="bulkModal"
+>
+
+    <div class="modal-box">
+
+
+        <div class="modal-header">
+
+            <h2 id="bulkModalTitle">
+                Bulk Upload
+            </h2>
+
+            <button
+                class="close-btn"
+                onclick="closeBulkModal()"
+            >
+                &times;
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+
+            <!-- STEP 1: choose file -->
+
+            <div
+                class="bulk-step active"
+                id="bulkStepChoose"
+            >
+
+                <div
+                    class="dropzone"
+                    onclick="document.getElementById('bulkFileInput').click()"
+                >
+
+                    <i class="fas fa-file-excel"></i>
+
+                    <div><strong>Click to select Excel file</strong></div>
+
+                    <p>
+                        .xlsx, .xls or .csv &nbsp;•&nbsp;
+                        Columns must match the Master DBT format
+                        (EstablishmentID required)
+                    </p>
+
+                </div>
+
+                <input
+                    type="file"
+                    id="bulkFileInput"
+                    accept=".xlsx,.xls,.csv"
+                    style="display:none;"
+                    onchange="handleBulkFileSelect(event)"
+                >
+
+                <div
+                    id="bulkFileChosen"
+                    style="display:none;"
+                ></div>
+
+            </div>
+
+
+            <!-- STEP 2: preview -->
+
+            <div
+                class="bulk-step"
+                id="bulkStepPreview"
+            >
+
+                <div
+                    class="summary-chips"
+                    id="bulkSummaryChips"
+                ></div>
+
+                <div
+                    class="warning-banner"
+                    id="bulkNewEstbWarning"
+                    style="display:none;"
+                ></div>
+
+                <div class="preview-note">
+                    Preview — first 5 rows from the file:
+                </div>
+
+                <div
+                    class="table-container"
+                    style="max-height:40vh;"
+                >
+                    <table id="bulkPreviewTable"></table>
+                </div>
+
+            </div>
+
+
+            <!-- STEP 3: progress -->
+
+            <div
+                class="bulk-step"
+                id="bulkStepProgress"
+            >
+
+                <p style="text-align:center;color:#6b7280;">
+                    Updating records, please wait...
+                </p>
+
+                <div class="progress-wrap">
+                    <div
+                        class="progress-fill"
+                        id="bulkProgressFill"
+                    ></div>
+                </div>
+
+                <div
+                    class="progress-text"
+                    id="bulkProgressText"
+                >
+                    0 / 0
+                </div>
+
+            </div>
+
+
+            <!-- STEP 4: result -->
+
+            <div
+                class="bulk-step"
+                id="bulkStepResult"
+            >
+
+                <div class="result-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+
+                <div
+                    class="summary-chips"
+                    id="bulkResultChips"
+                    style="justify-content:center;"
+                ></div>
+
+            </div>
+
+
+        </div>
+
+
+        <div
+            class="modal-footer"
+            id="bulkModalFooter"
+        >
+
+            <button
+                class="btn btn-secondary"
+                onclick="closeBulkModal()"
+            >
+                Cancel
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     CUSTOM ALERT (professional, centered)
+     ===================================================== -->
+
+<div
+    class="custom-alert-overlay"
+    id="customAlertOverlay"
+>
+
+    <div class="custom-alert-box">
+
+        <div
+            class="custom-alert-icon"
+            id="customAlertIcon"
+        >
+            <i class="fas fa-info-circle"></i>
+        </div>
+
+        <div
+            class="custom-alert-title"
+            id="customAlertTitle"
+        ></div>
+
+        <div
+            class="custom-alert-message"
+            id="customAlertMessage"
+        ></div>
+
+        <button
+            class="custom-alert-btn"
+            onclick="closeCustomAlert()"
+        >
+            OK
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   GOOGLE APPS SCRIPT URL
+   ===================================================== */
+
+const GOOGLE_SCRIPT_URL =
+    'https://script.google.com/macros/s/AKfycbxSgTZycoZxUvDvlVvXmICilkqDPLj81tjnXa2ejm578tQdcf95AWjCP1rB2I8_Fyou/exec';
+
+
+/* =====================================================
+   EMAIL -> ROLE OVERRIDE (fallback)
+   =====================================================
+   Agar login backend (Apps Script) se role empty,
+   galat spelling, ya missing aaye, to yahan diye
+   gaye email ke liye role force set ho jayega.
+   Naya user add karna ho to yahan ek line add karo.
+   ===================================================== */
+
+const EMAIL_ROLE_OVERRIDES = {
+    'dbt.help@boatnr.org': 'dbt',
+    'nats.kanpur@boatnr.org': 'nats',
+    'boat.outreach@boatnr.org': 'outreach'
+};
+
+
+/* =====================================================
+   GLOBAL VARIABLES
+   ===================================================== */
+
+let currentUser = null;
+
+let cachedData = null;
+
+let currentSection = 'dashboard';
+
+let currentEditSheet = '';
+
+let currentEditRow = null;
+
+let currentEditMode = 'edit';
+
+let currentHeaders = [];
+
+
+/* =====================================================
+   BULK UPLOAD STATE
+   ===================================================== */
+
+let bulkModule = '';
+
+let bulkToUpdate = [];      // rows that will be updated
+
+let bulkDuplicateCount = 0; // duplicate EstablishmentID within file (values replaced, not skipped)
+
+let bulkNotFoundCount = 0;  // EstablishmentID not present in master data + blank IDs
+
+let bulkNewEstablishments = []; // {id, name} list not found in Master ESTB. List
+
+let bulkPreviewRows = [];   // first 5 raw rows for preview table
+
+
+/* =====================================================
+   SHEET CONFIGURATION
+   =====================================================
+   bulkEditableFields (DBT only):
+   Jab bhi ye array set ho, bulk upload SIRF in exact
+   column names ko hi update karega — chahe Excel file
+   mein aur bhi columns kyun na ho. Baaki sab columns
+   (Establishment ID, Name, District, State, etc.)
+   kabhi touch nahi honge.
+   Agar aapke Google Sheet mein header ka exact spelling
+   is se thoda alag hai (space/case), to yahan neeche
+   wahi spelling use karo jo Row 1 mein hai.
+   ===================================================== */
+
+const SHEET_CONFIG = {
+    establishments: {
+        key: 'masterEstb',
+        sheetName: 'Master ESTB. List',
+        title: 'Master Establishments',
+        icon: 'fa-building',
+        allowAdd: true,
+        allowExport: true,
+        filterFields: ['State', 'Sector (CSP)', 'District'],
+        lockedFields: []
+    },
+    contracts: {
+        key: 'masterContracts',
+        sheetName: 'Master Contracts',
+        title: 'Master Contracts',
+        icon: 'fa-file-contract',
+        allowAdd: false,
+        allowBulkUpload: true,
+        allowBlankFilter: true,
+        allowExport: true,
+        filterFields: ['State', 'Sector (CSP)', 'District'], 
+        lockedFields: [],
+        /* ONLY these columns can be edited (edit form + bulk upload).
+           Match the exact header text from Row 1 of your Google Sheet. */
+        bulkEditableFields: [
+            'FY 24-25',
+            'FY 25-26',
+            'FY 26-27'
+        ]
+    },
+    authorizations: {
+        key: 'masterAuth',
+        sheetName: 'Master Authu.',
+        title: 'Master Authorizations',
+        icon: 'fa-check-circle',
+        allowAdd: false,
+        allowBulkUpload: true,
+        allowBlankFilter: true,
+        allowExport: true,
+        filterFields: ['State', 'Sector (CSP)', 'District'],
+        lockedFields: [],
+        /* ONLY this column can be edited (edit form + bulk upload).
+           Spelling must match the sheet header exactly. */
+        bulkEditableFields: [
+            'Athurization'
+        ]
+    },
+    dbt: {
+        key: 'masterDBT',
+        sheetName: 'Master DBT',
+        title: 'Master DBT',
+        icon: 'fa-money-bill-wave',
+        allowAdd: false,
+        allowBulkUpload: true,
+        allowBlankFilter: true,
+        allowExport: true,
+        filterFields: ['State', 'Sector (CSP)', 'District'],
+        lockedFields: [
+            'Sr. No.',
+            'Sector (CSP)',
+            'EstablishmentID',
+            'Name Of The Establishment',
+            'District',
+            'State'
+        ],
+        /* ONLY these columns (E,F,G,H,I,J in the sheet) may be
+           changed by a Master DBT bulk upload. Match the exact
+           header text from Row 1 of your Google Sheet. */
+        bulkEditableFields: [
+            'DBT Status',
+            'FY 24-25 Paydone',
+            'FY 25-26 Paydone',
+            'FY 25-26 pending',
+            'FY 26-27 Paydone',
+            'FY 26-27 pending'
+        ]
+    }
+};
+/* =====================================================
+   CHECK LOGIN
+   ===================================================== */
+
+function checkLogin() {
+
+    const stored =
+        localStorage.getItem('userInfo');
+
+
+    if (!stored) {
+
+        window.location.href =
+            './index.html';
+
+        return null;
+
+    }
+
+
+    try {
+
+        const parsed = JSON.parse(stored);
+
+        return applyRoleOverride(parsed);
+
+    } catch (error) {
+
+        localStorage.removeItem(
+            'userInfo'
+        );
+
+        window.location.href =
+            './index.html';
+
+        return null;
+
+    }
+
+}
+
+
+/* =====================================================
+   APPLY ROLE OVERRIDE
+   =====================================================
+   Email ko normalize (trim + lowercase) karke
+   EMAIL_ROLE_OVERRIDES map se match karta hai.
+   Match milte hi role force overwrite ho jata hai,
+   chahe backend se kuch bhi role aaya ho.
+   ===================================================== */
+
+function applyRoleOverride(user) {
+
+    if (!user || !user.userId) {
+        return user;
+    }
+
+    const emailKey =
+        String(user.userId)
+            .trim()
+            .toLowerCase();
+
+    if (
+        Object.prototype.hasOwnProperty.call(
+            EMAIL_ROLE_OVERRIDES,
+            emailKey
+        )
+    ) {
+
+        user.role =
+            EMAIL_ROLE_OVERRIDES[emailKey];
+
+    }
+
+    return user;
+
+}
+
+
+/* =====================================================
+   LOGOUT
+   ===================================================== */
+
+function logout() {
+
+    if (
+        confirm(
+            'Are you sure you want to logout?'
+        )
+    ) {
+
+        localStorage.removeItem(
+            'userInfo'
+        );
+
+        window.location.href =
+            './index.html';
+
+    }
+
+}
+
+
+/* =====================================================
+   ROLE NAME
+   ===================================================== */
+
+function getRoleName(role) {
+
+    const roles = {
+        admin: 'Administrator',
+        nats: 'NATS - Contracts',
+        outreach: 'Outreach - Authorization',
+        dbt: 'DBT - DBT Status'
+    };
+
+    const key = String(role || '').trim().toLowerCase();
+
+    return roles[key] || 'User';
+
+}
+
+
+/* =====================================================
+   PERMISSIONS
+   ===================================================== */
+
+function canEdit(module) {
+
+    if (!currentUser) {
+        return false;
+    }
+
+    const role = String(currentUser.role || '').trim().toLowerCase();
+
+    if (role === 'admin') {
+        return true;
+    }
+
+    if (role === 'nats' && module === 'contracts') {
+        return true;
+    }
+
+    if (role === 'outreach' && module === 'authorizations') {
+        return true;
+    }
+
+    if (role === 'dbt' && module === 'dbt') {
+        return true;
+    }
+
+    return false;
+
+}
+
+
+/* =====================================================
+   CAN DELETE
+   =====================================================
+   Delete is admin-only for every module. DBT users (and
+   NATS / Outreach) can still edit their own sheet via
+   canEdit(), they just never get a delete button.
+   ===================================================== */
+
+function canDelete(module) {
+
+    if (!currentUser) {
+        return false;
+    }
+
+    const role = String(currentUser.role || '').trim().toLowerCase();
+
+    return role === 'admin';
+
+}
+
+
+/* =====================================================
+   MENU VISIBILITY
+   =====================================================
+   DBT login should only ever see Dashboard + Master DBT
+   in the sidebar. Everyone else (admin, NATS, Outreach)
+   keeps seeing the full menu, unchanged — this is a
+   DBT-only restriction.
+   ===================================================== */
+
+const ROLE_ALLOWED_MODULES = {
+    dbt:      ['dashboard', 'dbt'],
+    nats:     ['dashboard', 'contracts'],
+    outreach: ['dashboard', 'authorizations']
+    /* admin is not listed -> admin sees everything */
+};
+
+function isModuleAllowed(module) {
+
+    const role =
+        currentUser
+            ? String(currentUser.role || '').trim().toLowerCase()
+            : '';
+
+    const allowed =
+        ROLE_ALLOWED_MODULES[role];
+
+    return !allowed || allowed.includes(module);
+
+}
+
+function applyMenuVisibility() {
+
+    document
+        .querySelectorAll('.sidebar-menu .menu-item')
+        .forEach(function(item) {
+
+            const module =
+                item.getAttribute('data-module');
+
+            if (!isModuleAllowed(module)) {
+
+                item.style.display = 'none';
+
+            }
+
+        });
+
+}
+
+/* =====================================================
+   TOGGLE SIDEBAR
+   ===================================================== */
+
+function toggleSidebar() {
+
+    document
+        .getElementById('sidebar')
+        .classList
+        .toggle('open');
+
+}
+
+
+/* =====================================================
+   SHOW SECTION
+   ===================================================== */
+
+function showSection(
+    section,
+    clickedElement
+) {
+
+    /* Defense in depth: even if someone tries to open a
+       restricted section directly (not via the sidebar),
+       a DBT login is bounced back to Dashboard. */
+
+    if (!isModuleAllowed(section)) {
+
+        section = 'dashboard';
+
+        clickedElement =
+            document.querySelector(
+                '.sidebar-menu [data-module="dashboard"] .menu-link'
+            );
+
+    }
+
+
+    currentSection =
+        section;
+
+
+    document
+        .querySelectorAll('.menu-link')
+        .forEach(function(link) {
+
+            link.classList.remove(
+                'active'
+            );
+
+        });
+
+
+    if (clickedElement) {
+
+        clickedElement.classList.add(
+            'active'
+        );
+
+    }
+
+
+    const titles = {
+
+        dashboard:
+            'Dashboard',
+
+        establishments:
+            'Master ESTB. List',
+
+        contracts:
+            'Master Contracts',
+
+        authorizations:
+            'Master Authu.',
+
+        dbt:
+            'Master DBT'
+
+    };
+
+
+    document
+        .getElementById('pageTitle')
+        .textContent =
+            titles[section];
+
+
+    document
+        .getElementById('breadcrumbCurrent')
+        .textContent =
+            titles[section];
+
+
+    document
+        .querySelectorAll('.content-section')
+        .forEach(function(sectionElement) {
+
+            sectionElement
+                .classList
+                .remove('active');
+
+        });
+
+
+    if (section === 'dashboard') {
+
+        document
+            .getElementById(
+                'dashboardSection'
+            )
+            .classList
+            .add('active');
+
+    } else {
+
+        document
+            .getElementById(
+                section + 'Section'
+            )
+            .classList
+            .add('active');
+
+    }
+
+
+    if (
+        window.innerWidth <= 1024
+    ) {
+
+        document
+            .getElementById('sidebar')
+            .classList
+            .remove('open');
+
+    }
+
+}
+
+
+/* =====================================================
+   FETCH DATA
+   ===================================================== */
+
+async function fetchData() {
+
+    let url =
+        GOOGLE_SCRIPT_URL;
+
+
+    const role =
+        String(currentUser.role || '')
+            .trim()
+            .toLowerCase();
+
+
+    if (
+        role === 'admin'
+    ) {
+
+        url +=
+            '?action=getAllData' +
+            '&email=' +
+            encodeURIComponent(
+                currentUser.userId
+            );
+
+    } else {
+
+        url +=
+            '?action=getUserData' +
+            '&email=' +
+            encodeURIComponent(
+                currentUser.userId
+            );
+
+    }
+
+
+    const response =
+        await fetch(url);
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            'HTTP Error: ' +
+            response.status
+        );
+
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if (data.error) {
+
+        throw new Error(
+            data.error
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+/* =====================================================
+   REFRESH
+   ===================================================== */
+
+async function refreshData() {
+
+    const loading =
+        document.getElementById(
+            'loadingContainer'
+        );
+
+
+    const error =
+        document.getElementById(
+            'errorContainer'
+        );
+
+
+    loading.style.display =
+        'block';
+
+
+    error.style.display =
+        'none';
+
+
+    try {
+
+        cachedData =
+            await fetchData();
+
+
+        loading.style.display =
+            'none';
+
+
+        displayStats();
+
+        displayAllSections();
+
+    } catch (err) {
+
+        loading.style.display =
+            'none';
+
+
+        showError(
+            err.message
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   ADMIN DASHBOARD
+   =====================================================
+   Sirf admin ko dikhta hai. Baaki roles ka dashboard
+   purane stat cards jaisa hi rahta hai.
+   ===================================================== */
+
+function isAdminUser() {
+
+    return !!currentUser &&
+        String(currentUser.role || '').trim().toLowerCase() === 'admin';
+
+}
+
+
+function fmtNum(n) {
+
+    return Number(n || 0).toLocaleString('en-IN');
+
+}
+
+
+function isEmptyCell(v) {
+
+    return String(v === null || v === undefined ? '' : v).trim() === '';
+
+}
+
+
+/* blank ya #N/A / N/A ko "khali" maana jaata hai (dashboard ke liye) */
+
+function isBlankOrNA(v) {
+
+    const t = String(v === null || v === undefined ? '' : v).trim().toUpperCase();
+
+    return t === '' || t === '#N/A' || t === 'N/A';
+
+}
+
+
+function toNumber(v) {
+
+    const n = parseFloat(
+        String(v === null || v === undefined ? '' : v).replace(/,/g, '')
+    );
+
+    return isNaN(n) ? 0 : n;
+
+}
+
+
+/* rows me se un rows ko gino jinke saare given columns blank hain
+   (Blank Records filter wala hi rule) */
+
+function countFilledBlank(rows, fields) {
+
+    let blank = 0;
+
+    rows.forEach(function(r) {
+
+        const allBlank = fields.every(function(f) {
+            return isBlankOrNA(r[f]);
+        });
+
+        if (allBlank) {
+            blank++;
+        }
+
+    });
+
+    return { filled: rows.length - blank, blank: blank };
+
+}
+
+
+/* ek column ki values ko group karke count (blank / #N/A ek group) */
+
+function groupCounts(rows, field, maxItems) {
+
+    const groups = {};
+
+    rows.forEach(function(r) {
+
+        const raw = String(
+            r[field] === null || r[field] === undefined ? '' : r[field]
+        ).trim();
+
+        const upper = raw.toUpperCase();
+
+        const isNA = raw === '' || upper === '#N/A' || upper === 'N/A';
+
+        const key = isNA ? '__na' : raw.toLowerCase();
+
+        const label = isNA
+            ? 'Blank / N/A'
+            : raw.charAt(0).toUpperCase() + raw.slice(1);
+
+        if (!groups[key]) {
+            groups[key] = { label: label, count: 0 };
+        }
+
+        groups[key].count++;
+
+    });
+
+    let list = Object.values(groups).sort(function(a, b) {
+        return b.count - a.count;
+    });
+
+    if (list.length > maxItems) {
+
+        const rest = list.slice(maxItems - 1);
+
+        const others = rest.reduce(function(sum, g) {
+            return sum + g.count;
+        }, 0);
+
+        list = list.slice(0, maxItems - 1);
+
+        list.push({ label: 'Others', count: others });
+
+    }
+
+    return list;
+
+}
+
+
+function dashBar(label, sub, valueText, pct, color) {
+
+    return `
+        <div class="dash-bar-row">
+            <div class="dash-bar-head">
+                <div>
+                    <div class="dash-bar-label">${escapeHTML(String(label))}</div>
+                    ${sub ? '<div class="dash-bar-sub">' + escapeHTML(String(sub)) + '</div>' : ''}
+                </div>
+                <div class="dash-bar-value">${escapeHTML(String(valueText))}</div>
+            </div>
+            <div class="dash-bar-track">
+                <div class="dash-bar-fill" style="width:${pct}%;background:${color};"></div>
+            </div>
+        </div>
+    `;
+
+}
+
+
+function dashTopCard(color, icon, title, total, labelA, valueA, labelB, valueB) {
+
+    return `
+        <div class="dash-top-card ${color}">
+            <div class="dash-icon ${color}"><i class="fas ${icon}"></i></div>
+            <div>
+                <div class="dash-top-title">${title}</div>
+                <div class="dash-top-total">${fmtNum(total)}</div>
+                <div class="dash-top-line">${labelA}: <b>${fmtNum(valueA)}</b></div>
+                <div class="dash-top-line">${labelB}: <b>${fmtNum(valueB)}</b></div>
+            </div>
+        </div>
+    `;
+
+}
+
+
+function dashPanel(color, icon, title, total, bodyHTML) {
+
+    return `
+        <div class="dash-panel">
+            <div class="dash-panel-head">
+                <div class="dash-icon ${color}"><i class="fas ${icon}"></i></div>
+                <div class="dash-panel-title">${title}</div>
+                <div class="dash-chip ${color}">Total: ${fmtNum(total)}</div>
+            </div>
+            ${bodyHTML || '<div class="dash-empty">No data available</div>'}
+        </div>
+    `;
+
+}
+
+
+function renderAdminDashboard() {
+
+    const container =
+        document.getElementById('statsContainer');
+
+    container.className = 'admin-dash';
+
+    const titleEl =
+        document.querySelector('#dashboardSection .section-title');
+
+    if (titleEl) {
+        titleEl.innerHTML =
+            '<i class="fas fa-chart-pie"></i> ' +
+            'Overview of Establishment Records and Module-wise Summary';
+    }
+
+
+    const estb      = cachedData.masterEstb || [];
+    const contracts = cachedData.masterContracts || [];
+    const auth      = cachedData.masterAuth || [];
+    const dbt       = cachedData.masterDBT || [];
+
+
+    /* Establishments: "Added" = ESTB record jo teeno sheets
+       (Contracts, Authu., DBT) me bhi maujood hai;
+       "Pending" = kisi ek me bhi missing */
+
+    function idSet(rows) {
+
+        const set = {};
+
+        rows.forEach(function(r) {
+
+            const id = normId(r['EstablishmentID']);
+
+            if (id) {
+                set[id] = true;
+            }
+
+        });
+
+        return set;
+
+    }
+
+    const cSet = idSet(contracts);
+    const aSet = idSet(auth);
+    const dSet = idSet(dbt);
+
+    let added = 0;
+
+    estb.forEach(function(r) {
+
+        const id = normId(r['EstablishmentID']);
+
+        if (id && cSet[id] && aSet[id] && dSet[id]) {
+            added++;
+        }
+
+    });
+
+    const pending = estb.length - added;
+
+
+    /* Contracts: FY columns sheet ke header se apne aap detect hote hain
+       (FY 24-25, FY 25-26 ... naya FY column aaye to wo bhi dikhega) */
+
+    const fyRegex = /^FY\s*\d{2}\s*-\s*\d{2}$/i;
+
+    const fyCols =
+        contracts.length
+            ? Object.keys(contracts[0]).filter(function(h) {
+                return fyRegex.test(h);
+            })
+            : [];
+
+    const cFB = countFilledBlank(contracts, fyCols);
+
+    const blueShades = ['#1d4ed8', '#3b82f6', '#60a5fa', '#93c5fd'];
+
+    let contractsBody = '';
+
+    fyCols.forEach(function(col, i) {
+
+        let sum = 0;
+        let filledRows = 0;
+
+        contracts.forEach(function(r) {
+
+            if (!isBlankOrNA(r[col])) {
+                filledRows++;
+            }
+
+            sum += toNumber(r[col]);
+
+        });
+
+        const pct =
+            contracts.length
+                ? Math.round((filledRows / contracts.length) * 100)
+                : 0;
+
+        contractsBody += dashBar(
+            col,
+            'Total: ' + fmtNum(sum),
+            pct + '%',
+            pct,
+            blueShades[i % blueShades.length]
+        );
+
+    });
+
+
+    /* Authorizations */
+
+    const authField =
+        (SHEET_CONFIG.authorizations.bulkEditableFields || ['Athurization'])[0];
+
+    const aFB = countFilledBlank(auth, [authField]);
+
+    let authBody = '';
+
+    groupCounts(auth, authField, 8).forEach(function(g) {
+
+        const pct =
+            auth.length
+                ? Math.round((g.count / auth.length) * 100)
+                : 0;
+
+        authBody += dashBar(g.label, '', fmtNum(g.count), pct, '#2f9e5b');
+
+    });
+
+
+    /* DBT: "Yes" ki count + saare FY columns ke totals
+       (FY columns header se apne aap detect hote hain, naya FY
+       column aaye to wo bhi dikhega) */
+
+    const dbtFields =
+        SHEET_CONFIG.dbt.bulkEditableFields || [];
+
+    const dFB = countFilledBlank(dbt, dbtFields);
+
+    const dbtFyRegex = /^FY\s*\d{2}\s*-\s*\d{2}/i;
+
+    const dbtFyCols =
+        dbt.length
+            ? Object.keys(dbt[0]).filter(function(h) {
+                return dbtFyRegex.test(h);
+            })
+            : [];
+
+    const yesCount = dbt.filter(function(r) {
+        return String(r['DBT Status'] === null || r['DBT Status'] === undefined ? '' : r['DBT Status'])
+            .trim().toLowerCase() === 'yes';
+    }).length;
+
+    const yesPct =
+        dbt.length
+            ? Math.round((yesCount / dbt.length) * 100)
+            : 0;
+
+    let dbtBody = '';
+
+    if (dbt.length) {
+
+        dbtBody += dashBar(
+            'DBT Status: Yes',
+            yesPct + '% of records',
+            fmtNum(yesCount),
+            yesPct,
+            '#5b3fc4'
+        );
+
+    }
+
+    const purpleShades = ['#7c5cdb', '#9277e3', '#a992ea', '#c0aef1', '#d6cbf6'];
+
+    dbtFyCols.forEach(function(col, i) {
+
+        let sum = 0;
+        let withValue = 0;
+
+        dbt.forEach(function(r) {
+
+            const n = toNumber(r[col]);
+
+            sum += n;
+
+            if (n > 0) {
+                withValue++;
+            }
+
+        });
+
+        const pct =
+            dbt.length
+                ? Math.round((withValue / dbt.length) * 100)
+                : 0;
+
+        dbtBody += dashBar(
+            col,
+            'Total: ' + fmtNum(sum),
+            fmtNum(withValue) + ' records',
+            pct,
+            purpleShades[i % purpleShades.length]
+        );
+
+    });
+
+
+    container.innerHTML = `
+
+        <div class="dash-top-grid">
+
+            ${dashTopCard('blue', 'fa-building', 'Total Establishments',
+                estb.length, 'Added', added, 'Pending', pending)}
+
+            ${dashTopCard('green', 'fa-file-lines', 'Master DBT',
+                dbt.length, 'Filled', dFB.filled, 'Blank', dFB.blank)}
+
+            ${dashTopCard('purple', 'fa-file-contract', 'Master Contracts',
+                contracts.length, 'Filled', cFB.filled, 'Blank', cFB.blank)}
+
+            ${dashTopCard('orange', 'fa-shield-halved', 'Master Authu.',
+                auth.length, 'Filled', aFB.filled, 'Blank', aFB.blank)}
+
+        </div>
+
+        <div class="dash-panel-grid">
+
+            ${dashPanel('blue', 'fa-file-contract', 'Master Contracts',
+                contracts.length, contractsBody)}
+
+            ${dashPanel('green', 'fa-shield-halved', 'Master Authu.',
+                auth.length, authBody)}
+
+            ${dashPanel('purple', 'fa-money-bill-wave', 'Master DBT',
+                dbt.length, dbtBody)}
+
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================================
+   ROLE-WISE DASHBOARD
+   DBT  -> DBT Status + State-wise + Sector-wise + FY-wise
+   NATS -> State-wise + Sector-wise + FY-wise
+   Admin -> Existing admin dashboard
+   ===================================================== */
+
+function roleRows(module) {
+    if (!cachedData) return [];
+    const config = SHEET_CONFIG[module];
+    return cachedData[config.key] || [];
+}
+
+
+function normalizeDashboardKey(value) {
+    return String(value === null || value === undefined ? '' : value)
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ' ');
+}
+
+
+function firstExistingField(rows, candidates) {
+    if (!rows || !rows.length) return null;
+
+    const headers = Object.keys(rows[0] || {});
+
+    for (const candidate of candidates) {
+        const exact = headers.find(h => normalizeDashboardKey(h) === normalizeDashboardKey(candidate));
+        if (exact) return exact;
+    }
+
+    return null;
+}
+
+
+function renderGroupPanel(rows, field, title, icon, color, maxItems = 10) {
+    if (!rows.length || !field) {
+        return dashPanel(
+            color,
+            icon,
+            title,
+            rows.length,
+            '<div class="dash-empty">No data available</div>'
+        );
+    }
+
+    const groups = groupCounts(rows, field, maxItems);
+    let body = '';
+
+    groups.forEach(function(g) {
+        const pct = rows.length
+            ? Math.round((g.count / rows.length) * 100)
+            : 0;
+
+        body += dashBar(
+            g.label,
+            '',
+            fmtNum(g.count) + ' records',
+            pct,
+            color === 'blue'
+                ? '#3b82f6'
+                : color === 'green'
+                    ? '#2f9e5b'
+                    : '#7c5cdb'
+        );
+    });
+
+    return dashPanel(color, icon, title, rows.length, body);
+}
+
+
+function renderDBTFYPanel(rows) {
+    const fyRegex = /^FY\s*\d{2}\s*-\s*\d{2}/i;
+
+    const headers = rows.length ? Object.keys(rows[0]) : [];
+
+    const fyMap = {};
+
+    headers.forEach(function(h) {
+        if (!fyRegex.test(h)) return;
+
+        const match = h.match(/^(FY\s*\d{2}\s*-\s*\d{2})\s*(.*)$/i);
+        if (!match) return;
+
+        const fy = match[1].replace(/\s+/g, ' ').trim();
+        const suffix = normalizeDashboardKey(match[2]);
+
+        if (!fyMap[fy]) {
+            fyMap[fy] = {
+                paydone: null,
+                pending: null,
+                other: []
+            };
+        }
+
+        if (suffix.includes('paydone')) {
+            fyMap[fy].paydone = h;
+        } else if (suffix.includes('pending')) {
+            fyMap[fy].pending = h;
+        } else {
+            fyMap[fy].other.push(h);
+        }
+    });
+
+    const fys = Object.keys(fyMap);
+
+    if (!fys.length) {
+        return dashPanel(
+            'purple',
+            'fa-calendar',
+            'FY-wise DBT',
+            rows.length,
+            '<div class="dash-empty">No FY columns found</div>'
+        );
+    }
+
+    let body = '';
+
+    fys.forEach(function(fy) {
+        const item = fyMap[fy];
+
+        let paydone = 0;
+        let pending = 0;
+        let paydoneRecords = 0;
+        let pendingRecords = 0;
+
+        rows.forEach(function(r) {
+            if (item.paydone) {
+                const n = toNumber(r[item.paydone]);
+                paydone += n;
+                if (n > 0) paydoneRecords++;
+            }
+
+            if (item.pending) {
+                const n = toNumber(r[item.pending]);
+                pending += n;
+                if (n > 0) pendingRecords++;
+            }
+        });
+
+        const total = paydone + pending;
+        const payPct = total > 0 ? Math.round((paydone / total) * 100) : 0;
+
+        body += `
+            <div class="dash-bar-row">
+                <div class="dash-bar-head">
+                    <div>
+                        <div class="dash-bar-label">${escapeHTML(fy)}</div>
+                        <div class="dash-bar-sub">
+                            Paydone: ${fmtNum(paydone)}
+                            &nbsp; | &nbsp;
+                            Pending: ${fmtNum(pending)}
+                        </div>
+                    </div>
+                    <div class="dash-bar-value">
+                        ${fmtNum(total)}
+                    </div>
+                </div>
+
+                <div class="dash-bar-track">
+                    <div
+                        class="dash-bar-fill"
+                        style="width:${payPct}%;background:#7c5cdb;"
+                    ></div>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:#6b7280;">
+                    <span>Paydone records: ${fmtNum(paydoneRecords)}</span>
+                    <span>Pending records: ${fmtNum(pendingRecords)}</span>
+                </div>
+            </div>
+        `;
+    });
+
+    return dashPanel(
+        'purple',
+        'fa-calendar',
+        'FY-wise DBT',
+        rows.length,
+        body
+    );
+}
+
+
+function renderContractsFYPanel(rows) {
+    const fyRegex = /^FY\s*\d{2}\s*-\s*\d{2}$/i;
+
+    const fyCols = rows.length
+        ? Object.keys(rows[0]).filter(function(h) {
+            return fyRegex.test(h);
+        })
+        : [];
+
+    if (!fyCols.length) {
+        return dashPanel(
+            'purple',
+            'fa-calendar',
+            'FY-wise Contracts',
+            rows.length,
+            '<div class="dash-empty">No FY columns found</div>'
+        );
+    }
+
+    let body = '';
+
+    fyCols.forEach(function(col) {
+        let total = 0;
+        let filledRecords = 0;
+
+        rows.forEach(function(r) {
+            if (!isBlankOrNA(r[col])) {
+                filledRecords++;
+            }
+            total += toNumber(r[col]);
+        });
+
+        const pct = rows.length
+            ? Math.round((filledRecords / rows.length) * 100)
+            : 0;
+
+        body += dashBar(
+            col,
+            'Filled records: ' + fmtNum(filledRecords),
+            'Total: ' + fmtNum(total),
+            pct,
+            '#7c5cdb'
+        );
+    });
+
+    return dashPanel(
+        'purple',
+        'fa-calendar',
+        'FY-wise Contracts',
+        rows.length,
+        body
+    );
+}
+
+
+function renderDBTDashboard() {
+    const container = document.getElementById('statsContainer');
+    const rows = roleRows('dbt');
+
+    container.className = 'admin-dash';
+
+    const titleEl = document.querySelector('#dashboardSection .section-title');
+
+    if (titleEl) {
+        titleEl.innerHTML =
+            '<i class="fas fa-money-bill-wave"></i> DBT Dashboard Summary';
+    }
+
+    const statusField = firstExistingField(rows, [
+        'DBT Status'
+    ]);
+
+    const stateField = firstExistingField(rows, [
+        'State'
+    ]);
+
+    const sectorField = firstExistingField(rows, [
+        'Sector (CSP)',
+        'Sector',
+        'Sector/CSP'
+    ]);
+
+    let statusGroups = statusField
+        ? groupCounts(rows, statusField, 8)
+        : [];
+
+    let statusBody = '';
+
+    statusGroups.forEach(function(g) {
+        const pct = rows.length
+            ? Math.round((g.count / rows.length) * 100)
+            : 0;
+
+        statusBody += dashBar(
+            g.label,
+            '',
+            fmtNum(g.count) + ' records',
+            pct,
+            '#3b6fd8'
+        );
+    });
+
+    const filledStatus = statusField
+        ? rows.filter(r => !isBlankOrNA(r[statusField])).length
+        : 0;
+
+    const yesCount = statusField
+        ? rows.filter(function(r) {
+            return normalizeDashboardKey(r[statusField]) === 'yes';
+        }).length
+        : 0;
+
+    const pendingCount = statusField
+        ? rows.filter(function(r) {
+            const v = normalizeDashboardKey(r[statusField]);
+            return v === 'pending' || v === 'no';
+        }).length
+        : 0;
+
+    const totalFYValue = rows.reduce(function(sum, r) {
+        const fyFields = Object.keys(r).filter(h =>
+            /^FY\s*\d{2}\s*-\s*\d{2}/i.test(h)
+        );
+
+        return sum + fyFields.reduce((s, h) => s + toNumber(r[h]), 0);
+    }, 0);
+
+    container.innerHTML = `
+        <div class="dash-top-grid">
+
+            ${dashTopCard(
+                'blue',
+                'fa-database',
+                'Total DBT Records',
+                rows.length,
+                'Status Filled',
+                filledStatus,
+                'Status Blank',
+                rows.length - filledStatus
+            )}
+
+            ${dashTopCard(
+                'green',
+                'fa-circle-check',
+                'DBT Status',
+                rows.length,
+                'Yes',
+                yesCount,
+                'Pending / No',
+                pendingCount
+            )}
+
+            ${dashTopCard(
+                'purple',
+                'fa-calendar',
+                'FY-wise DBT Value',
+                totalFYValue,
+                'FY Columns',
+                Object.keys(rows[0] || {}).filter(h =>
+                    /^FY\s*\d{2}\s*-\s*\d{2}/i.test(h)
+                ).length,
+                'Records',
+                rows.length
+            )}
+
+            ${dashTopCard(
+                'orange',
+                'fa-building',
+                'DBT Establishments',
+                rows.length,
+                'States',
+                stateField ? new Set(rows.map(r => normalizeDashboardKey(r[stateField])).filter(Boolean)).size : 0,
+                'Sectors',
+                sectorField ? new Set(rows.map(r => normalizeDashboardKey(r[sectorField])).filter(Boolean)).size : 0
+            )}
+
+        </div>
+
+        <div class="dash-panel-grid">
+
+            ${dashPanel(
+                'blue',
+                'fa-money-bill-wave',
+                'DBT Status-wise',
+                rows.length,
+                statusBody
+            )}
+
+            ${renderGroupPanel(
+                rows,
+                stateField,
+                'State-wise DBT',
+                'fa-map-location-dot',
+                'green',
+                12
+            )}
+
+            ${renderGroupPanel(
+                rows,
+                sectorField,
+                'Sector-wise DBT',
+                'fa-building',
+                'green',
+                8
+            )}
+
+            ${renderDBTFYPanel(rows)}
+
+        </div>
+    `;
+}
+
+
+function renderNATSDashboard() {
+    const container = document.getElementById('statsContainer');
+    const rows = roleRows('contracts');
+
+    container.className = 'admin-dash';
+
+    const titleEl = document.querySelector('#dashboardSection .section-title');
+
+    if (titleEl) {
+        titleEl.innerHTML =
+            '<i class="fas fa-file-contract"></i> NATS Contracts Dashboard';
+    }
+
+    const stateField = firstExistingField(rows, [
+        'State'
+    ]);
+
+    const sectorField = firstExistingField(rows, [
+        'Sector (CSP)',
+        'Sector',
+        'Sector/CSP'
+    ]);
+
+    const fyRegex = /^FY\s*\d{2}\s*-\s*\d{2}$/i;
+    const fyCols = rows.length
+        ? Object.keys(rows[0]).filter(h => fyRegex.test(h))
+        : [];
+
+    const totalContracts = rows.reduce(function(sum, r) {
+        return sum + fyCols.reduce((s, col) => s + toNumber(r[col]), 0);
+    }, 0);
+
+    const filledFYRecords = rows.filter(function(r) {
+        return fyCols.some(col => !isBlankOrNA(r[col]));
+    }).length;
+
+    container.innerHTML = `
+        <div class="dash-top-grid">
+
+            ${dashTopCard(
+                'blue',
+                'fa-file-contract',
+                'Total Contract Records',
+                rows.length,
+                'FY Filled',
+                filledFYRecords,
+                'FY Blank',
+                rows.length - filledFYRecords
+            )}
+
+            ${dashTopCard(
+                'green',
+                'fa-map-location-dot',
+                'State-wise',
+                stateField
+                    ? new Set(rows.map(r => normalizeDashboardKey(r[stateField])).filter(Boolean)).size
+                    : 0,
+                'States',
+                stateField
+                    ? new Set(rows.map(r => normalizeDashboardKey(r[stateField])).filter(Boolean)).size
+                    : 0,
+                'Records',
+                rows.length
+            )}
+
+            ${dashTopCard(
+                'purple',
+                'fa-calendar',
+                'FY-wise Contracts',
+                totalContracts,
+                'FY Columns',
+                fyCols.length,
+                'Records',
+                rows.length
+            )}
+
+            ${dashTopCard(
+                'orange',
+                'fa-building',
+                'Sector-wise',
+                sectorField
+                    ? new Set(rows.map(r => normalizeDashboardKey(r[sectorField])).filter(Boolean)).size
+                    : 0,
+                'Sectors',
+                sectorField
+                    ? new Set(rows.map(r => normalizeDashboardKey(r[sectorField])).filter(Boolean)).size
+                    : 0,
+                'Records',
+                rows.length
+            )}
+
+        </div>
+
+        <div class="dash-panel-grid">
+
+            ${renderGroupPanel(
+                rows,
+                stateField,
+                'State-wise Contracts',
+                'fa-map-location-dot',
+                'blue',
+                12
+            )}
+
+            ${renderGroupPanel(
+                rows,
+                sectorField,
+                'Sector-wise Contracts',
+                'fa-building',
+                'green',
+                8
+            )}
+
+            ${renderContractsFYPanel(rows)}
+
+        </div>
+    `;
+}
+
+function renderOutreachDashboard() {
+
+    const container = document.getElementById('statsContainer');
+    const rows = roleRows('authorizations');
+
+    container.className = 'admin-dash';
+
+    const titleEl = document.querySelector('#dashboardSection .section-title');
+
+    if (titleEl) {
+        titleEl.innerHTML =
+            '<i class="fas fa-shield-halved"></i> Outreach Authorization Dashboard';
+    }
+
+    const authField =
+        firstExistingField(rows, ['Athurization', 'Authorization', 'Authorisation']) ||
+        (SHEET_CONFIG.authorizations.bulkEditableFields || [])[0];
+
+    const stateField  = firstExistingField(rows, ['State']);
+    const sectorField = firstExistingField(rows, ['Sector (CSP)', 'Sector', 'Sector/CSP']);
+
+    const total = rows.length;
+
+    /* ---------- Authorization status-wise groups ---------- */
+
+    const statusGroups = authField
+        ? groupCounts(rows, authField, 7)
+        : [];
+
+    const statusColors = [
+        '#2f9e5b', '#3b82f6', '#f5b82e', '#8b5cf6',
+        '#ec6ba8', '#22b8cf', '#94a3b8'
+    ];
+
+    /* "Blank / N/A" ko hamesha grey rakho, baaki ko palette se rang do */
+
+    let colorIdx = 0;
+
+    statusGroups.forEach(function(g) {
+
+        g.pct = total ? Math.round((g.count / total) * 100) : 0;
+
+        if (g.label === 'Blank / N/A') {
+            g.color = '#cbd5e1';
+        } else {
+            g.color = statusColors[colorIdx % statusColors.length];
+            colorIdx++;
+        }
+
+    });
+
+    /* conic-gradient segments */
+
+    let acc = 0;
+
+    const stops = statusGroups.map(function(g) {
+
+        const start = acc;
+        const share = total ? (g.count / total) * 100 : 0;
+
+        acc += share;
+
+        return g.color + ' ' + start + '% ' + acc + '%';
+
+    });
+
+    const donutBg = stops.length
+        ? 'conic-gradient(' + stops.join(', ') + ')'
+        : '#e5e7eb';
+
+    const legendHTML = statusGroups.map(function(g) {
+        return `
+            <div>
+                <span class="od-dot" style="background:${g.color};"></span>
+                ${escapeHTML(g.label)} &nbsp; ${fmtNum(g.count)} (${g.pct}%)
+            </div>
+        `;
+    }).join('');
+
+    const tableRowsHTML = statusGroups.length
+        ? statusGroups.map(function(g) {
+            return `
+                <tr>
+                    <td>
+                        <span class="od-status-cell">
+                            <span class="od-dot" style="background:${g.color};"></span>
+                            ${escapeHTML(g.label)}
+                        </span>
+                    </td>
+                    <td>${fmtNum(g.count)}</td>
+                    <td>${g.pct}%</td>
+                </tr>
+            `;
+        }).join('')
+        : '<tr><td colspan="3" style="text-align:center;color:#9ca3af;">No data available</td></tr>';
+
+    /* ---------- reusable bar list ---------- */
+
+    function barList(groups, sum, colors) {
+
+        if (!groups.length) {
+            return '<div class="dash-empty">No data available</div>';
+        }
+
+        const max = Math.max.apply(null, groups.map(g => g.count)) || 1;
+
+        return groups.map(function(g, i) {
+
+            const pct = Math.max((g.count / max) * 100, 1.5);
+
+            const color = colors[i % colors.length];
+
+            return `
+                <div class="od-bar-row">
+                    <div class="od-bar-label" title="${escapeHTML(g.label)}">
+                        ${escapeHTML(g.label)}
+                    </div>
+                    <div class="od-bar-track">
+                        <div class="od-bar-fill"
+                             style="width:${pct}%;background:${color};"></div>
+                    </div>
+                    <div class="od-bar-value">${fmtNum(g.count)}</div>
+                </div>
+            `;
+
+        }).join('');
+
+    }
+
+    const stateGroups  = stateField  ? groupCounts(rows, stateField, 12)  : [];
+    const sectorGroups = sectorField ? groupCounts(rows, sectorField, 10) : [];
+
+    const sectorColors = [
+        '#3b82f6', '#2f9e5b', '#8b5cf6', '#f5b82e',
+        '#22b8cf', '#ec6ba8', '#7c9be0', '#f97316',
+        '#14b8a6', '#94a3b8'
+    ];
+
+    /* ---------- render ---------- */
+
+    container.innerHTML = `
+
+        <div class="od-grid">
+
+            <!-- Authorization Status Overview -->
+            <div class="od-panel">
+
+                <div class="od-head">
+                    <div class="od-head-icon"><i class="fas fa-chart-pie"></i></div>
+                    <div class="od-head-title">Authorization Status Overview</div>
+                </div>
+
+                <div class="od-status-wrap">
+
+                    <div class="od-donut-col">
+
+                        <div class="od-donut" style="background:${donutBg};">
+                            <div class="od-donut-hole">
+                                <div class="od-donut-total">${fmtNum(total)}</div>
+                                <div class="od-donut-sub">Total Records</div>
+                            </div>
+                        </div>
+
+                        <div class="od-legend">
+                            ${legendHTML}
+                        </div>
+
+                    </div>
+
+                    <div class="od-breakdown">
+
+                        <div class="od-breakdown-title">Status Breakdown</div>
+
+                        <table class="od-table">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Count</th>
+                                    <th>%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRowsHTML}
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- State-wise Authorizations -->
+            <div class="od-panel">
+
+                <div class="od-head">
+                    <div class="od-head-icon"><i class="fas fa-location-dot"></i></div>
+                    <div class="od-head-title">State-wise Authorizations</div>
+                    <div class="od-total-chip">Total: ${fmtNum(total)}</div>
+                </div>
+
+                ${barList(stateGroups, total, ['#3b82f6'])}
+
+            </div>
+
+        </div>
+
+        <!-- Sector-wise Authorizations -->
+        <div class="od-panel">
+
+            <div class="od-head">
+                <div class="od-head-icon"><i class="fas fa-building"></i></div>
+                <div class="od-head-title">Sector-wise Authorizations</div>
+                <div class="od-total-chip">Total: ${fmtNum(total)}</div>
+            </div>
+
+            ${barList(sectorGroups, total, sectorColors)}
+
+        </div>
+
+    `;
+}
+
+/* =====================================================
+   DISPLAY STATS
+   ===================================================== */
+
+function displayStats() {
+
+    if (!cachedData) {
+        return;
+    }
+
+    const role = currentUser
+        ? String(currentUser.role || '').trim().toLowerCase()
+        : '';
+
+    if (isAdminUser()) {
+        renderAdminDashboard();
+        return;
+    }
+
+    if (role === 'dbt') {
+        renderDBTDashboard();
+        return;
+    }
+
+    if (role === 'nats') {
+        renderNATSDashboard();
+        return;
+    }
+        if (role === 'nats') {
+        renderNATSDashboard();
+        return;
+    }
+
+    /* ---- यह नया block जोड़ें ---- */
+    if (role === 'outreach') {
+        renderOutreachDashboard();
+        return;
+    }
+
+    /* Outreach / other users: existing simple cards */
+
+    const stats = [
+        {
+            title: 'Establishments',
+            value: (cachedData.masterEstb || []).length,
+            icon: 'fa-building'
+        },
+        {
+            title: 'Contracts',
+            value: (cachedData.masterContracts || []).length,
+            icon: 'fa-file-contract'
+        },
+        {
+            title: 'Authorizations',
+            value: (cachedData.masterAuth || []).length,
+            icon: 'fa-check-circle'
+        },
+        {
+            title: 'DBT Records',
+            value: (cachedData.masterDBT || []).length,
+            icon: 'fa-money-bill-wave'
+        }
+    ];
+
+    const container = document.getElementById('statsContainer');
+
+    container.className = 'stats-grid';
+
+    container.innerHTML =
+        stats.map(function(item) {
+            return `
+                <div class="stat-card">
+                    <div class="stat-label">
+                        <i class="fas ${item.icon}"></i>
+                        &nbsp;
+                        ${item.title}
+                    </div>
+                    <div class="stat-value">
+                        ${item.value}
+                    </div>
+                </div>
+            `;
+        }).join('');
+}
+
+
+/* =====================================================
+   DISPLAY ALL SECTIONS
+   ===================================================== */
+
+function displayAllSections() {
+
+    renderModule(
+        'establishments'
+    );
+
+    renderModule(
+        'contracts'
+    );
+
+    renderModule(
+        'authorizations'
+    );
+
+    renderModule(
+        'dbt'
+    );
+
+}
+
+
+/* =====================================================
+   RENDER MODULE
+   ===================================================== */
+
+function renderModule(module) {
+     blankFilterState[module] = false;
+
+    const config =
+        SHEET_CONFIG[module];
+
+
+    const container =
+        document.getElementById(
+            module + 'Section'
+        );
+
+
+    const data =
+        cachedData[config.key] || [];
+
+
+    const editable =
+        canEdit(module);
+
+    const canDeleteFlag =
+        canDelete(module);
+
+
+    const showAddBtn =
+        editable && config.allowAdd;
+
+    const showBulkBtn =
+        editable && config.allowBulkUpload;
+
+    const showBlankFilterBtn =
+        !!config.allowBlankFilter;
+
+    const showExportBtn =
+        !!config.allowExport;
+
+
+    container.innerHTML = `
+
+        <div class="section-header">
+
+            <div>
+
+                <div class="section-title">
+
+                    <i class="fas ${config.icon}"></i>
+
+                    ${config.title}
+
+                </div>
+
+                <div style="
+                    margin-top:6px;
+                    font-size:12px;
+                    color:#6b7280;
+                ">
+
+                    ${data.length} Records
+
+                    &nbsp; • &nbsp;
+
+                    ${
+                        editable
+                        ? '<span class="edit-badge">Editable</span>'
+                        : '<span class="view-badge">View Only</span>'
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="section-actions">
+
+                <input
+                    type="text"
+                    class="search-box"
+                    placeholder="Search..."
+                    oninput="filterTable(
+                        '${module}',
+                        this.value
+                    )"
+                >
+
+                ${
+                    showAddBtn
+                    ? `
+                        <button
+                            class="btn btn-success"
+                            onclick="openAddModal('${module}')"
+                        >
+
+                            <i class="fas fa-plus"></i>
+
+                            Add
+
+                        </button>
+                    `
+                    : ''
+                }
+
+                ${
+                    showBlankFilterBtn
+                    ? `
+                        <button
+                            class="btn btn-bulk"
+                            id="${module}BlankBtn"
+                            onclick="toggleBlankFilter('${module}')"
+                        >
+
+                            <i class="fas fa-filter"></i>
+
+                            Blank Records
+
+                        </button>
+                    `
+                    : ''
+                }
+
+                ${
+                    showExportBtn
+                    ? `
+                        <button
+                            class="btn btn-export"
+                            onclick="exportTableToExcel('${module}')"
+                        >
+
+                            <i class="fas fa-download"></i>
+
+                            Export Excel
+
+                        </button>
+                    `
+                    : ''
+                }
+
+                ${
+                    showBulkBtn
+                    ? `
+                        <button
+                            class="btn btn-bulk"
+                            onclick="openBulkUploadModal('${module}')"
+                        >
+
+                            <i class="fas fa-file-excel"></i>
+
+                            Bulk Upload
+
+                        </button>
+                    `
+                    : ''
+                }
+
+            </div>
+
+        </div>
+
+
+                <div class="section-body">
+
+            ${
+                config.filterFields
+                ? buildFilterBar(module, data)
+                : ''
+            }
+
+            ${
+                createTable(
+                    module,
+                    data,
+                    editable,
+                    canDeleteFlag
+                )
+            }
+
+        </div>
+
+    `;
+
+}
+
+/* =====================================================
+   CREATE TABLE
+   ===================================================== */
+
+function createTable(
+    module,
+    data,
+    editable,
+    canDeleteFlag
+) {
+
+    if (
+        !data ||
+        data.length === 0
+    ) {
+
+        return `
+
+            <div class="no-data">
+
+                <i class="fas fa-inbox"></i>
+
+                <p>No data available</p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /*
+     * Get headers from first record.
+     *
+     * _rowNumber is internal and not displayed.
+     */
+
+    const headers =
+        Object.keys(
+            data[0]
+        ).filter(function(header) {
+
+            return header !== '_rowNumber';
+
+        });
+
+
+    currentHeaders =
+        headers;
+
+
+    let html = `
+
+        <div class="table-container">
+
+            <table
+                id="${module}Table"
+            >
+
+                <thead>
+
+                    <tr>
+
+    `;
+
+
+    headers.forEach(function(header) {
+
+        html += `
+
+            <th>
+                ${escapeHTML(header)}
+            </th>
+
+        `;
+
+    });
+
+
+    if (editable) {
+
+        html += `
+
+            <th>
+                ACTION
+            </th>
+
+        `;
+
+    }
+
+
+    html += `
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+    `;
+
+
+    data.forEach(function(row, index) {
+
+        html += `
+
+            <tr
+                data-search-row="${index}"
+            >
+
+        `;
+
+
+        headers.forEach(function(header) {
+
+            const value =
+                row[header] ?? '';
+
+
+            html += `
+
+                <td>
+
+                    ${escapeHTML(
+                        String(value)
+                    )}
+
+                </td>
+
+            `;
+
+        });
+
+
+        if (editable) {
+
+            html += `
+
+                <td class="action-cell">
+
+                    <button
+                        class="small-btn edit-btn"
+                        title="Edit"
+                        onclick="openEditModal(
+                            '${module}',
+                            ${index}
+                        )"
+                    >
+
+                        <i class="fas fa-edit"></i>
+
+                    </button>
+
+                    ${
+                        canDeleteFlag
+                        ? `
+                            <button
+                                class="small-btn delete-btn"
+                                title="Delete"
+                                onclick="deleteRecord(
+                                    '${module}',
+                                    ${index}
+                                )"
+                            >
+
+                                <i class="fas fa-trash"></i>
+
+                            </button>
+                        `
+                        : ''
+                    }
+
+                </td>
+
+            `;
+
+        }
+
+
+        html += `
+
+            </tr>
+
+        `;
+
+    });
+
+
+    html += `
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+
+    return html;
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+   ===================================================== */
+
+function escapeHTML(value) {
+
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+}
+
+
+/* =====================================================
+   SEARCH TABLE
+   ===================================================== */
+
+/* =====================================================
+   TABLE FILTERS (State / Sector / District) + SEARCH
+   ===================================================== */
+
+function resolveField(data, name) {
+
+    if (!data.length) {
+        return null;
+    }
+
+    const aliases = {
+        'sector (csp)': ['Sector (CSP)', 'Sector', 'Sector/CSP']
+    };
+
+    const candidates =
+        aliases[normKey(name)] || [name];
+
+    const headers = Object.keys(data[0]);
+
+    for (let i = 0; i < candidates.length; i++) {
+
+        const hit = headers.find(function(k) {
+            return normKey(k) === normKey(candidates[i]);
+        });
+
+        if (hit) {
+            return hit;
+        }
+
+    }
+
+    return null;
+
+}
+
+function uniqueValues(rows, field) {
+
+    const map = {};
+
+    rows.forEach(function(r) {
+
+        const raw = String(r[field] === null || r[field] === undefined ? '' : r[field]).trim();
+
+        if (!raw) {
+            return;
+        }
+
+        const k = raw.toLowerCase();
+
+        if (!map[k]) {
+            map[k] = raw;
+        }
+
+    });
+
+    return Object.values(map).sort(function(a, b) {
+        return a.localeCompare(b);
+    });
+
+}
+
+
+function filterOptionLabel(fieldName, value) {
+
+    if (normKey(fieldName) === normKey('Sector (CSP)')) {
+
+        const labels = { c: 'C (Central)', p: 'P (Private)', s: 'S (State)' };
+
+        return labels[String(value).toLowerCase()] || value;
+
+    }
+
+    return value;
+
+}
+
+
+function buildFilterBar(module, data) {
+
+    const config = SHEET_CONFIG[module];
+
+    const fields = (config.filterFields || [])
+        .map(function(name) {
+            return { name: name, key: resolveField(data, name) };
+        })
+        .filter(function(f) {
+            return f.key;
+        });
+
+    if (!fields.length) {
+        return '';
+    }
+
+    const groups = fields.map(function(f) {
+
+        const options = uniqueValues(data, f.key)
+            .map(function(v) {
+                return '<option value="' + escapeHTML(v) + '">' +
+                    escapeHTML(filterOptionLabel(f.name, v)) + '</option>';
+            })
+            .join('');
+
+        return `
+            <div class="filter-group">
+                <label>${escapeHTML(f.name.replace(' (CSP)', ''))}</label>
+                <select
+                    data-filter-key="${escapeHTML(f.key)}"
+                    data-filter-name="${escapeHTML(f.name)}"
+                    onchange="onFilterChange('${module}', this)"
+                >
+                    <option value="">All</option>
+                    ${options}
+                </select>
+            </div>
+        `;
+
+    }).join('');
+
+    return `
+        <div class="filter-bar" id="${module}FilterBar">
+
+            ${groups}
+
+            <button class="btn btn-secondary" onclick="clearFilters('${module}')">
+                <i class="fas fa-rotate-left"></i>
+                Clear Filters
+            </button>
+
+            <div class="filter-count" id="${module}FilterCount">
+                Showing ${fmtNum(data.length)} of ${fmtNum(data.length)} records
+            </div>
+
+        </div>
+    `;
+
+}
+
+
+/* State badalne par District ke options sirf usi State ke dikhao */
+
+function refreshDistrictOptions(module) {
+
+    const config = SHEET_CONFIG[module];
+    const data = cachedData[config.key] || [];
+
+    const bar = document.getElementById(module + 'FilterBar');
+
+    if (!bar) {
+        return;
+    }
+
+    const stateSel = bar.querySelector('select[data-filter-name="State"]');
+    const distSel  = bar.querySelector('select[data-filter-name="District"]');
+
+    if (!stateSel || !distSel) {
+        return;
+    }
+
+    const stateKey = stateSel.getAttribute('data-filter-key');
+    const distKey  = distSel.getAttribute('data-filter-key');
+
+    const rows = stateSel.value
+        ? data.filter(function(r) {
+            return normKey(r[stateKey]) === normKey(stateSel.value);
+        })
+        : data;
+
+    const previous = distSel.value;
+
+    const values = uniqueValues(rows, distKey);
+
+    distSel.innerHTML =
+        '<option value="">All</option>' +
+        values.map(function(v) {
+            return '<option value="' + escapeHTML(v) + '">' + escapeHTML(v) + '</option>';
+        }).join('');
+
+    if (values.some(function(v) { return normKey(v) === normKey(previous); })) {
+
+        const match = values.find(function(v) { return normKey(v) === normKey(previous); });
+
+        distSel.value = match;
+
+    }
+
+}
+
+
+function onFilterChange(module, selectEl) {
+
+    if (selectEl.getAttribute('data-filter-name') === 'State') {
+        refreshDistrictOptions(module);
+    }
+
+    applyRowFilters(module);
+
+}
+
+
+function clearFilters(module) {
+
+    const bar = document.getElementById(module + 'FilterBar');
+
+    if (bar) {
+        bar.querySelectorAll('select').forEach(function(s) {
+            s.value = '';
+        });
+    }
+
+    refreshDistrictOptions(module);
+
+    const section = document.getElementById(module + 'Section');
+
+    const searchBox = section && section.querySelector('.search-box');
+
+    if (searchBox) {
+        searchBox.value = '';
+    }
+        if (blankFilterState[module]) {
+
+        blankFilterState[module] = false;
+
+        const btn = document.getElementById(module + 'BlankBtn');
+
+        if (btn) {
+            btn.classList.remove('active-filter');
+            btn.innerHTML = '<i class="fas fa-filter"></i> Blank Records';
+        }
+
+    }
+    applyRowFilters(module);
+
+}
+
+
+/* Search text + dropdown filters dono ek saath lagte hain */
+
+function applyRowFilters(module) {
+
+    const table = document.getElementById(module + 'Table');
+
+    if (!table) {
+        return;
+    }
+
+    const config = SHEET_CONFIG[module];
+    const data = cachedData[config.key] || [];
+    const section = document.getElementById(module + 'Section');
+
+    const searchBox = section.querySelector('.search-box');
+
+    const search = (searchBox ? searchBox.value : '').toLowerCase().trim();
+
+    /* dropdown filters */
+
+    const active = [];
+
+    section.querySelectorAll('.filter-bar select').forEach(function(sel) {
+
+        if (sel.value) {
+            active.push({
+                key: sel.getAttribute('data-filter-key'),
+                val: sel.value
+            });
+        }
+
+    });
+
+    /* blank-records filter */
+
+    const blankOn = !!blankFilterState[module];
+
+    const blankKeys = blankOn
+        ? (config.bulkEditableFields || BLANK_CHECK_FIELDS)
+            .map(function(f) { return resolveField(data, f); })
+            .filter(Boolean)
+        : [];
+
+    let visible = 0;
+
+    table.querySelectorAll('tbody tr').forEach(function(row) {
+
+        const idx = Number(row.getAttribute('data-search-row'));
+        const rec = data[idx];
+
+        let ok = row.textContent.toLowerCase().includes(search);
+
+        if (ok && rec) {
+
+            ok = active.every(function(f) {
+                return normKey(rec[f.key]) === normKey(f.val);
+            });
+
+        }
+
+        if (ok && rec && blankOn) {
+
+            ok = blankKeys.every(function(k) {
+                return String(rec[k] === null || rec[k] === undefined ? '' : rec[k]).trim() === '';
+            });
+
+        }
+
+        row.style.display = ok ? '' : 'none';
+
+        if (ok) {
+            visible++;
+        }
+
+    });
+
+    const countEl = document.getElementById(module + 'FilterCount');
+
+    if (countEl) {
+        countEl.textContent =
+            'Showing ' + fmtNum(visible) + ' of ' + fmtNum(data.length) + ' records';
+    }
+
+}
+
+/* Search box ab isi function se chalta hai (purani jagah wahi call) */
+
+function filterTable(module, search) {
+
+    applyRowFilters(module);
+
+}
+
+/* =====================================================
+   BLANK RECORDS FILTER (Master DBT)
+   =====================================================
+   Shows only rows where ALL of these columns are empty —
+   i.e. establishments the DBT sheet hasn't been filled
+   in for yet. Toggling again (or refreshing data) shows
+   everything again.
+   ===================================================== */
+
+const BLANK_CHECK_FIELDS = [
+    'DBT Status',
+    'FY 24-25 Paydone',
+    'FY 25-26 Paydone',
+    'FY 25-26 pending',
+    'FY 26-27 Paydone',
+    'FY 26-27 pending'
+];
+
+const blankFilterState = {};
+
+function toggleBlankFilter(module) {
+
+    const table =
+        document.getElementById(module + 'Table');
+
+    if (!table) {
+        return;
+    }
+
+    const btn =
+        document.getElementById(module + 'BlankBtn');
+
+    const isActive =
+        !blankFilterState[module];
+
+    blankFilterState[module] = isActive;
+
+    if (btn) {
+
+        btn.classList.toggle('active-filter', isActive);
+
+        btn.innerHTML =
+            isActive
+                ? '<i class="fas fa-times"></i> Clear Filter'
+                : '<i class="fas fa-filter"></i> Blank Records';
+
+    }
+
+    applyRowFilters(module);
+
+}
+
+/* =====================================================
+   EXPORT TO EXCEL
+   =====================================================
+   Exports exactly what is currently VISIBLE in the
+   table — so if "Blank Records" filter (or a text
+   search) is active, only those filtered rows go into
+   the file. With no filter active, every row exports.
+   ===================================================== */
+
+function exportTableToExcel(module) {
+
+    const table =
+        document.getElementById(module + 'Table');
+
+    if (!table) {
+
+        showAlertBox('No data available to export.', 'warning');
+
+        return;
+
+    }
+
+
+    const headers =
+        Array.from(
+            table.querySelectorAll('thead th')
+        ).map(function(th) {
+            return th.textContent.trim();
+        });
+
+    const actionIndex =
+        headers.indexOf('ACTION');
+
+
+    const visibleRows =
+        Array.from(
+            table.querySelectorAll('tbody tr')
+        ).filter(function(row) {
+
+            return row.style.display !== 'none';
+
+        });
+
+
+    if (!visibleRows.length) {
+
+        showAlertBox(
+            'No visible rows to export. Clear the filter or search and try again.',
+            'warning'
+        );
+
+        return;
+
+    }
+
+
+    const exportData =
+        visibleRows.map(function(row) {
+
+            const cells =
+                row.querySelectorAll('td');
+
+            const record = {};
+
+            headers.forEach(function(header, idx) {
+
+                if (idx === actionIndex) {
+                    return;
+                }
+
+                record[header] =
+                    cells[idx]
+                        ? cells[idx].textContent.trim()
+                        : '';
+
+            });
+
+            return record;
+
+        });
+
+
+    const worksheet =
+        XLSX.utils.json_to_sheet(exportData);
+
+    const workbook =
+        XLSX.utils.book_new();
+
+    const sheetLabel =
+        (SHEET_CONFIG[module].sheetName || module)
+            .slice(0, 31);
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        sheetLabel
+    );
+
+
+        const section = document.getElementById(module + 'Section');
+
+    const dropdownActive =
+        Array.from(section.querySelectorAll('.filter-bar select'))
+            .some(function(s) { return s.value; });
+
+    const isFiltered =
+        !!blankFilterState[module] || dropdownActive;
+
+    const dateStamp =
+        new Date()
+            .toISOString()
+            .slice(0, 10);
+
+    const fileName =
+        SHEET_CONFIG[module].key +
+        (isFiltered ? '_blank-records_' : '_all-records_') +
+        dateStamp +
+        '.xlsx';
+
+    XLSX.writeFile(workbook, fileName);
+
+}
+
+
+/* =====================================================
+   OPEN EDIT MODAL
+   ===================================================== */
+
+function openEditModal(module, index) {
+
+    if (!canEdit(module)) {
+        showAlertBox('You do not have permission to edit this module.', 'error');
+        return;
+    }
+
+    const config = SHEET_CONFIG[module];
+    const data = cachedData[config.key];
+    const row = data[index];
+
+    currentEditSheet = config.sheetName;
+    currentEditRow = row._rowNumber;
+    currentEditMode = 'edit';
+
+    const headers = Object.keys(row).filter(function(header) {
+        return header !== '_rowNumber';
+    });
+
+    document.getElementById('modalTitle').textContent = 'Edit - ' + config.title;
+
+    const lockedFields = config.lockedFields || [];
+
+    const editableOnly = config.bulkEditableFields || null;
+
+    let formHTML = '<div class="form-grid">';
+
+    headers.forEach(function(header) {
+        const value = row[header] ?? '';
+        const isLocked =
+            lockedFields.includes(header) ||
+            (editableOnly !== null && !editableOnly.includes(header));
+
+        formHTML += `
+            <div class="field">
+                <label>${escapeHTML(header)}</label>
+                <input
+                    type="text"
+                    data-field="${escapeHTML(header)}"
+                    value="${escapeHTML(String(value))}"
+                    ${isLocked ? 'readonly style="background:#f3f4f6; color:#6b7280; cursor:not-allowed;"' : ''}
+                >
+            </div>
+        `;
+    });
+
+    formHTML += '</div>';
+
+    document.getElementById('modalBody').innerHTML = formHTML;
+    document.getElementById('dataModal').classList.add('show');
+}
+/* =====================================================
+   OPEN ADD MODAL
+   ===================================================== */
+function openAddModal(module) {
+
+    if (!canEdit(module)) {
+        showAlertBox('You do not have permission to add records.', 'error');
+        return;
+    }
+
+    const config = SHEET_CONFIG[module];
+    const data = cachedData[config.key] || [];
+
+    currentEditSheet = config.sheetName;
+    currentEditRow = null;
+    currentEditMode = 'add';
+
+    document.getElementById('modalTitle').textContent = 'Add - ' + config.title;
+
+    /* ---------- SPECIAL FORM: sirf Master ESTB ke liye ---------- */
+    if (module === 'establishments') {
+
+        const nextSerial = data.length + 1;
+
+        const formHTML = `
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Sr. No.</label>
+                    <input type="text" data-field="Sr. No." value="${nextSerial}" readonly>
+                </div>
+
+                <div class="field">
+                    <label>Sector (CSP)</label>
+                    <select data-field="Sector (CSP)">
+                        <option value="">-- Select --</option>
+                        <option value="C">C</option>
+                        <option value="P">P</option>
+                        <option value="S">S</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>EstablishmentID</label>
+                    <input type="text" data-field="EstablishmentID" value=""
+                        oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
+                </div>
+
+                <div class="field">
+                    <label>Name Of The Establishment</label>
+                    <input type="text" data-field="Name Of The Establishment" value=""
+                        oninput="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1)">
+                </div>
+
+                <div class="field">
+                    <label>District</label>
+                    <input type="text" data-field="District" value=""
+                        oninput="this.value = this.value.toUpperCase()">
+                </div>
+
+                <div class="field">
+                    <label>State</label>
+                    <input type="text" data-field="State" value=""
+                        oninput="this.value = this.value.toUpperCase()">
+                </div>
+
+            </div>
+        `;
+
+        document.getElementById('modalBody').innerHTML = formHTML;
+        document.getElementById('dataModal').classList.add('show');
+        return;
+    }
+
+    /* ---------- DEFAULT FORM: baaki sab modules ke liye (unchanged) ---------- */
+    let headers = [];
+
+    if (data.length > 0) {
+        headers = Object.keys(data[0]).filter(function(header) {
+            return header !== '_rowNumber';
+        });
+    } else {
+        headers = [
+            'Sr. No.', 'Sector (CSP)', 'EstablishmentID',
+            'Name Of The Establishment', 'District', 'State'
+        ];
+    }
+
+    let formHTML = '<div class="form-grid">';
+
+    headers.forEach(function(header) {
+        formHTML += `
+            <div class="field">
+                <label>${escapeHTML(header)}</label>
+                <input type="text" data-field="${escapeHTML(header)}" value="">
+            </div>
+        `;
+    });
+
+    formHTML += '</div>';
+
+    document.getElementById('modalBody').innerHTML = formHTML;
+    document.getElementById('dataModal').classList.add('show');
+}
+
+/* =====================================================
+   CLOSE MODAL
+   ===================================================== */
+
+function closeModal() {
+
+    document
+        .getElementById('dataModal')
+        .classList
+        .remove('show');
+
+}
+
+
+/* =====================================================
+   CUSTOM ALERT — professional, centered, replaces
+   native browser alert() popups
+   ===================================================== */
+
+function showAlertBox(message, type, title) {
+
+    type = type || 'info';
+
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-times-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    };
+
+    const titles = {
+        success: 'Success',
+        error: 'Something went wrong',
+        warning: 'Please note',
+        info: 'Notice'
+    };
+
+    const iconEl =
+        document.getElementById('customAlertIcon');
+
+    iconEl.className =
+        'custom-alert-icon ' + type;
+
+    iconEl.innerHTML =
+        '<i class="fas ' + (icons[type] || icons.info) + '"></i>';
+
+    document.getElementById('customAlertTitle').textContent =
+        title || titles[type] || titles.info;
+
+    document.getElementById('customAlertMessage').textContent =
+        message;
+
+    document.getElementById('customAlertOverlay').classList.add('show');
+
+}
+
+
+function closeCustomAlert() {
+
+    document
+        .getElementById('customAlertOverlay')
+        .classList
+        .remove('show');
+
+}
+
+
+/* =====================================================
+   BULK UPLOAD — HELPERS
+   ===================================================== */
+
+function normKey(value) {
+
+    return String(value || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+
+}
+
+
+/*
+ * normId — used to compare EstablishmentID values so a
+ * duplicate is found no matter the letter case or extra
+ * spaces (e.g. "aparna01" in the Excel file and
+ * "APARNA01" in the sheet are treated as the SAME id).
+ */
+
+function normId(value) {
+
+    return String(value || '')
+        .replace(/\s+/g, '')
+        .trim()
+        .toUpperCase();
+
+}
+
+
+function switchBulkStep(stepId) {
+
+    document
+        .querySelectorAll('.bulk-step')
+        .forEach(function(step) {
+
+            step.classList.remove('active');
+
+        });
+
+
+    document
+        .getElementById(stepId)
+        .classList
+        .add('active');
+
+}
+
+
+/* =====================================================
+   BULK UPLOAD — OPEN / RESET / CLOSE
+   ===================================================== */
+
+function openBulkUploadModal(module) {
+
+    if (!canEdit(module)) {
+
+        showAlertBox(
+            'You do not have permission to bulk upload for this module.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    bulkModule = module;
+
+    bulkToUpdate = [];
+
+    bulkDuplicateCount = 0;
+
+    bulkNotFoundCount = 0;
+
+    bulkNewEstablishments = [];
+
+    bulkPreviewRows = [];
+
+
+    document.getElementById('bulkModalTitle').textContent =
+        'Bulk Upload - ' + SHEET_CONFIG[module].title;
+
+    document.getElementById('bulkFileInput').value = '';
+
+    document.getElementById('bulkFileChosen').style.display = 'none';
+
+    document.getElementById('bulkFileChosen').innerHTML = '';
+
+
+    document.getElementById('bulkModalFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="closeBulkModal()">
+            Cancel
+        </button>
+    `;
+
+
+    switchBulkStep('bulkStepChoose');
+
+
+    document.getElementById('bulkModal').classList.add('show');
+
+}
+
+
+function closeBulkModal() {
+
+    document
+        .getElementById('bulkModal')
+        .classList
+        .remove('show');
+
+}
+
+
+/* =====================================================
+   BULK UPLOAD — FILE SELECT + PARSE
+   ===================================================== */
+
+function handleBulkFileSelect(event) {
+
+    const file =
+        event.target.files[0];
+
+
+    if (!file) {
+        return;
+    }
+
+
+    const chosenBox =
+        document.getElementById('bulkFileChosen');
+
+    chosenBox.style.display = 'flex';
+
+    chosenBox.innerHTML = `
+        <span>
+            <i class="fas fa-file-excel" style="color:#10b981;"></i>
+            &nbsp; ${escapeHTML(file.name)}
+        </span>
+        <span style="color:#6b7280;">Reading file...</span>
+    `;
+
+
+    const reader = new FileReader();
+
+
+    reader.onload = function(e) {
+
+        try {
+
+            const workbook =
+                XLSX.read(e.target.result, { type: 'binary' });
+
+            const firstSheetName =
+                workbook.SheetNames[0];
+
+            const worksheet =
+                workbook.Sheets[firstSheetName];
+
+            const rows =
+                XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+
+            if (!rows.length) {
+
+                showAlertBox('The selected file has no data rows.', 'warning');
+
+                return;
+
+            }
+
+
+            processBulkRows(rows);
+
+
+        } catch (error) {
+
+            showAlertBox('Could not read the file: ' + error.message, 'error');
+
+        }
+
+    };
+
+
+    reader.onerror = function() {
+
+        showAlertBox('Failed to read the selected file.', 'error');
+
+    };
+
+
+    reader.readAsBinaryString(file);
+
+}
+
+
+/* =====================================================
+   BULK UPLOAD — MAP + DEDUPE + MATCH
+   ===================================================== */
+
+function processBulkRows(rawRows) {
+
+    const config =
+        SHEET_CONFIG[bulkModule];
+
+    const masterData =
+        cachedData[config.key] || [];
+
+
+    if (!masterData.length) {
+
+        showAlertBox(
+            'No existing ' + config.title +
+            ' records loaded to match against.',
+            'warning'
+        );
+
+        return;
+
+    }
+
+
+    /* Actual sheet headers (excluding internal _rowNumber) */
+
+    const sheetHeaders =
+        Object.keys(masterData[0]).filter(function(h) {
+            return h !== '_rowNumber';
+        });
+
+
+    /* normalized-header -> actual-header map */
+
+    const headerMap = {};
+
+    sheetHeaders.forEach(function(h) {
+        headerMap[normKey(h)] = h;
+    });
+
+
+    /* Build a lookup of existing records by EstablishmentID.
+       normId() makes this match case-insensitive and
+       space-insensitive, so "aparna01" in the file still
+       matches "APARNA01" already in the sheet. */
+
+    const masterById = {};
+
+    masterData.forEach(function(row) {
+
+        const idVal =
+            normId(row['EstablishmentID']);
+
+        if (idVal) {
+            masterById[idVal] = row;
+        }
+
+    });
+
+
+    const lockedFields =
+        config.lockedFields || [];
+
+    /* If bulkEditableFields is defined (Master DBT), it is a
+       WHITELIST — only those exact columns can ever be written
+       by a bulk upload, no matter what else is in the file. */
+
+    const editableFields =
+        config.bulkEditableFields || null;
+
+
+    /* idVal -> { rowNumber, data, establishmentId } — later rows for the
+       same EstablishmentID simply overwrite (replace) earlier values */
+
+    const updateMap = {};
+
+    let duplicateReplacedCount = 0;
+
+
+    /* EstablishmentIDs present in the file but NOT found in the
+       existing Master data — these are new establishments and must
+       never be created directly from a DBT bulk upload */
+
+    const newEstablishments = [];
+
+    let blankIdCount = 0;
+
+
+    bulkPreviewRows =
+        rawRows.slice(0, 5);
+
+
+    rawRows.forEach(function(excelRow) {
+
+        /* map this excel row's columns onto actual sheet headers */
+
+        const mappedRow = {};
+
+        Object.keys(excelRow).forEach(function(excelHeader) {
+
+            const norm =
+                normKey(excelHeader);
+
+            if (headerMap[norm]) {
+
+                mappedRow[headerMap[norm]] =
+                    excelRow[excelHeader];
+
+            }
+
+        });
+
+
+        const idValRaw =
+            mappedRow['EstablishmentID'] !== undefined
+                ? mappedRow['EstablishmentID']
+                : '';
+
+        const idVal =
+            normId(idValRaw);
+
+
+        if (!idVal) {
+
+            blankIdCount++;
+
+            return;
+
+        }
+
+
+        const matchedRow =
+            masterById[idVal];
+
+
+        if (!matchedRow) {
+
+            newEstablishments.push({
+                id: idVal,
+                name:
+                    mappedRow['Name Of The Establishment'] ||
+                    mappedRow['Name of the establishment'] ||
+                    ''
+            });
+
+            return;
+
+        }
+
+
+        if (updateMap[idVal]) {
+
+            duplicateReplacedCount++;
+
+        }
+
+
+        /* base = previously merged value for this ID (if this is a
+           repeat row) else the current master record */
+
+        const base =
+            updateMap[idVal]
+                ? updateMap[idVal].data
+                : matchedRow;
+
+
+        const mergedData = {};
+
+        sheetHeaders.forEach(function(header) {
+
+            /* Whitelist check when defined (Master DBT: only
+               E,F,G,H,I,J) — otherwise fall back to the old
+               blacklist (lockedFields) behaviour used by other
+               modules. */
+
+            const isEditable =
+                editableFields
+                    ? editableFields.includes(header)
+                    : !lockedFields.includes(header);
+
+            if (
+                isEditable &&
+                mappedRow[header] !== undefined &&
+                mappedRow[header] !== ''
+            ) {
+
+                mergedData[header] = mappedRow[header];
+
+            } else {
+
+                mergedData[header] = base[header] ?? '';
+
+            }
+
+        });
+
+
+        updateMap[idVal] = {
+            rowNumber: matchedRow._rowNumber,
+            data: mergedData,
+            establishmentId: idVal
+        };
+
+    });
+
+
+    bulkToUpdate =
+        Object.values(updateMap);
+
+    bulkDuplicateCount =
+        duplicateReplacedCount;
+
+    bulkNewEstablishments =
+        newEstablishments;
+
+    bulkNotFoundCount =
+        newEstablishments.length + blankIdCount;
+
+
+    if (newEstablishments.length) {
+
+        const sample =
+            newEstablishments
+                .slice(0, 10)
+                .map(function(item) {
+                    return item.id + (item.name ? ' - ' + item.name : '');
+                })
+                .join('\n');
+
+        showAlertBox(
+            newEstablishments.length +
+            ' establishment(s) in this file are NOT in Master ESTB. List.\n\n' +
+            'Please add them to Master ESTB. List first — new records ' +
+            'cannot be added directly from Master DBT bulk upload.\n\n' +
+            sample +
+            (newEstablishments.length > 10 ? '\n...' : ''),
+            'warning'
+        );
+
+    }
+
+
+    renderBulkPreviewStep(sheetHeaders, rawRows.length);
+
+}
+
+
+/* =====================================================
+   BULK UPLOAD — PREVIEW STEP
+   ===================================================== */
+
+function renderBulkPreviewStep(sheetHeaders, totalRows) {
+
+    const chips =
+        document.getElementById('bulkSummaryChips');
+
+    chips.innerHTML = `
+        <span class="chip chip-total">Total rows: ${totalRows}</span>
+        <span class="chip chip-update">Will update: ${bulkToUpdate.length}</span>
+        <span class="chip chip-dup">Duplicate rows (values replaced): ${bulkDuplicateCount}</span>
+        <span class="chip chip-notfound">New / not in Master ESTB (skipped): ${bulkNewEstablishments.length}</span>
+    `;
+
+
+    const warningBox =
+        document.getElementById('bulkNewEstbWarning');
+
+    if (bulkNewEstablishments.length) {
+
+        const listItems =
+            bulkNewEstablishments
+                .slice(0, 10)
+                .map(function(item) {
+                    return '<li>' +
+                        escapeHTML(item.id) +
+                        (item.name ? ' — ' + escapeHTML(String(item.name)) : '') +
+                        '</li>';
+                })
+                .join('');
+
+        warningBox.style.display = 'block';
+
+        warningBox.innerHTML = `
+            <strong>
+                <i class="fas fa-exclamation-triangle"></i>
+                ${bulkNewEstablishments.length} establishment(s) not found in Master ESTB. List
+            </strong>
+            <div style="margin-top:6px;">
+                Add them in <strong>Master ESTB. List</strong> first —
+                new records can't be created directly from Master DBT
+                bulk upload. These rows will be skipped.
+            </div>
+            <ul style="margin:8px 0 0 18px;">${listItems}</ul>
+            ${
+                bulkNewEstablishments.length > 10
+                ? '<div style="margin-top:4px;">...and ' + (bulkNewEstablishments.length - 10) + ' more</div>'
+                : ''
+            }
+        `;
+
+    } else {
+
+        warningBox.style.display = 'none';
+
+        warningBox.innerHTML = '';
+
+    }
+
+
+    /* preview table — first 5 raw rows, using excel's own columns */
+
+    const previewHeaders =
+        bulkPreviewRows.length
+            ? Object.keys(bulkPreviewRows[0])
+            : [];
+
+    let tableHTML = '<thead><tr>';
+
+    previewHeaders.forEach(function(h) {
+        tableHTML += `<th>${escapeHTML(h)}</th>`;
+    });
+
+    tableHTML += '</tr></thead><tbody>';
+
+    bulkPreviewRows.forEach(function(row) {
+
+        tableHTML += '<tr>';
+
+        previewHeaders.forEach(function(h) {
+
+            tableHTML +=
+                `<td>${escapeHTML(String(row[h] ?? ''))}</td>`;
+
+        });
+
+        tableHTML += '</tr>';
+
+    });
+
+    tableHTML += '</tbody>';
+
+
+    document.getElementById('bulkPreviewTable').innerHTML = tableHTML;
+
+
+    document.getElementById('bulkModalFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="openBulkUploadModal('${bulkModule}')">
+            Choose Different File
+        </button>
+        <button
+            class="btn btn-primary"
+            onclick="confirmBulkUpload()"
+            ${bulkToUpdate.length === 0 ? 'disabled' : ''}
+        >
+            <i class="fas fa-check"></i>
+            Confirm & Submit (${bulkToUpdate.length})
+        </button>
+    `;
+
+
+    switchBulkStep('bulkStepPreview');
+
+}
+
+
+/* =====================================================
+   BULK UPLOAD — CONFIRM + SUBMIT (sequential)
+   ===================================================== */
+
+async function confirmBulkUpload() {
+
+    if (!bulkToUpdate.length) {
+        return;
+    }
+
+
+    const config =
+        SHEET_CONFIG[bulkModule];
+
+    document.getElementById('bulkModalFooter').innerHTML = '';
+
+    switchBulkStep('bulkStepProgress');
+
+
+    let successCount = 0;
+
+    let failCount = 0;
+
+    const total = bulkToUpdate.length;
+
+
+    for (let i = 0; i < total; i++) {
+
+        const item = bulkToUpdate[i];
+
+
+        updateBulkProgress(i, total);
+
+
+        try {
+
+            const response =
+                await postRequest({
+
+                    action: 'updateRow',
+
+                    email: currentUser.userId,
+
+                    sheetName: config.sheetName,
+
+                    rowNumber: item.rowNumber,
+
+                    data: item.data
+
+                });
+
+
+            if (response && response.success) {
+
+                successCount++;
+
+            } else {
+
+                failCount++;
+
+            }
+
+        } catch (error) {
+
+            failCount++;
+
+        }
+
+    }
+
+
+    updateBulkProgress(total, total);
+
+
+    await refreshData();
+
+
+    showBulkResult(successCount, failCount);
+
+}
+
+
+function updateBulkProgress(done, total) {
+
+    const pct =
+        total ? Math.round((done / total) * 100) : 0;
+
+    document.getElementById('bulkProgressFill').style.width = pct + '%';
+
+    document.getElementById('bulkProgressText').textContent =
+        done + ' / ' + total;
+
+}
+
+
+/* =====================================================
+   BULK UPLOAD — RESULT
+   ===================================================== */
+
+function showBulkResult(successCount, failCount) {
+
+    const chips =
+        document.getElementById('bulkResultChips');
+
+    chips.innerHTML = `
+        <span class="chip chip-update">Updated (Establishments): ${successCount}</span>
+        <span class="chip chip-dup">Duplicate rows replaced: ${bulkDuplicateCount}</span>
+        <span class="chip chip-notfound">New / not in Master ESTB (skipped): ${bulkNewEstablishments.length}</span>
+        ${
+            failCount
+            ? `<span class="chip" style="background:#fee2e2;color:#b91c1c;">Failed: ${failCount}</span>`
+            : ''
+        }
+    `;
+
+
+    document.getElementById('bulkModalFooter').innerHTML = `
+        <button class="btn btn-primary" onclick="closeBulkModal()">
+            Done
+        </button>
+    `;
+
+
+    switchBulkStep('bulkStepResult');
+
+}
+
+
+/* =====================================================
+   SAVE RECORD
+   ===================================================== */
+
+async function saveRecord() {
+
+    const saveBtn =
+        document.getElementById(
+            'saveBtn'
+        );
+
+
+    saveBtn.disabled = true;
+
+    saveBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+
+    try {
+
+        const inputs =
+            document
+                .querySelectorAll(
+                    '#modalBody [data-field]'
+                );
+
+
+        const rowData = {};
+
+
+        inputs.forEach(function(input) {
+
+            rowData[
+                input.dataset.field
+            ] =
+                input.value;
+
+        });
+
+
+        const payload = {
+
+            action:
+                currentEditMode === 'edit'
+                    ? 'updateRow'
+                    : 'addRow',
+
+            email:
+                currentUser.userId,
+
+            sheetName:
+                currentEditSheet,
+
+            data:
+                rowData
+
+        };
+
+
+        if (
+            currentEditMode === 'edit'
+        ) {
+
+            payload.rowNumber =
+                currentEditRow;
+
+        }
+
+
+        const response =
+            await postRequest(
+                payload
+            );
+
+
+        if (!response.success) {
+
+            throw new Error(
+                response.error ||
+                'Unable to save record'
+            );
+
+        }
+
+
+        closeModal();
+
+
+        await refreshData();
+
+
+        showAlertBox(
+            currentEditMode === 'edit'
+                ? 'Record updated successfully.'
+                : 'Record added successfully.',
+            'success'
+        );
+
+
+    } catch (error) {
+
+        showAlertBox(
+            'Error: ' +
+            error.message,
+            'error'
+        );
+
+    } finally {
+
+        saveBtn.disabled = false;
+
+        saveBtn.innerHTML =
+            '<i class="fas fa-save"></i> Save';
+
+    }
+
+}
+
+
+/* =====================================================
+   DELETE RECORD
+   ===================================================== */
+
+async function deleteRecord(
+    module,
+    index
+) {
+
+    if (!canDelete(module)) {
+
+        showAlertBox(
+            'Only an administrator can delete records.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    const config =
+        SHEET_CONFIG[module];
+
+
+    const data =
+        cachedData[config.key];
+
+
+    const row =
+        data[index];
+
+
+    if (!row) {
+        return;
+    }
+
+
+    const establishment =
+        row['EstablishmentID'] ||
+        row['Name Of The Establishment'] ||
+        'this record';
+
+
+    if (
+        !confirm(
+            'Are you sure you want to delete ' +
+            establishment +
+            '?'
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await postRequest({
+
+                action:
+                    'deleteRow',
+
+                email:
+                    currentUser.userId,
+
+                sheetName:
+                    config.sheetName,
+
+                rowNumber:
+                    row._rowNumber
+
+            });
+
+
+        if (!response.success) {
+
+            throw new Error(
+                response.error ||
+                'Delete failed'
+            );
+
+        }
+
+
+        await refreshData();
+
+
+        showAlertBox(
+            'Record deleted successfully.',
+            'success'
+        );
+
+
+    } catch (error) {
+
+        showAlertBox(
+            'Error: ' +
+            error.message,
+            'error'
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   POST REQUEST
+   ===================================================== */
+
+async function postRequest(
+    payload
+) {
+
+    const response =
+        await fetch(
+            GOOGLE_SCRIPT_URL,
+            {
+
+                method: 'POST',
+
+                headers: {
+
+                    'Content-Type':
+                        'text/plain;charset=utf-8'
+
+                },
+
+                body:
+                    JSON.stringify(
+                        payload
+                    )
+
+            }
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            'HTTP Error: ' +
+            response.status
+        );
+
+    }
+
+
+    return await response.json();
+
+}
+
+
+/* =====================================================
+   SHOW ERROR
+   ===================================================== */
+
+function showError(
+    message
+) {
+
+    const container =
+        document.getElementById(
+            'errorContainer'
+        );
+
+
+    container.innerHTML = `
+
+        <div class="error-box">
+
+            <h3>
+
+                <i class="fas fa-exclamation-circle"></i>
+
+                Error Loading Data
+
+            </h3>
+
+            <p style="margin-top:8px;">
+
+                ${escapeHTML(
+                    message
+                )}
+
+            </p>
+
+            <p style="
+                margin-top:12px;
+                font-size:13px;
+            ">
+
+                Please check the Google Apps Script
+                deployment and permissions.
+
+            </p>
+
+        </div>
+
+    `;
+
+
+    container.style.display =
+        'block';
+
+}
+
+
+/* =====================================================
+   INITIALIZE DASHBOARD
+   ===================================================== */
+
+async function initDashboard() {
+
+    currentUser =
+        checkLogin();
+
+
+    if (!currentUser) {
+        return;
+    }
+
+
+    /* User details */
+
+    document
+        .getElementById('userAvatar')
+        .textContent =
+            currentUser.userId
+                .charAt(0)
+                .toUpperCase();
+
+
+    document
+        .getElementById('sidebarUserName')
+        .textContent =
+            currentUser.userId;
+
+
+    document
+        .getElementById('sidebarUserRole')
+        .textContent =
+            getRoleName(
+                currentUser.role
+            );
+
+
+    /* Hide sidebar items DBT login shouldn't see */
+
+    applyMenuVisibility();
+
+
+    /* Load data */
+
+    await refreshData();
+
+}
+
+
+/* =====================================================
+   MODAL OUTSIDE CLICK
+   ===================================================== */
+
+document
+    .getElementById('dataModal')
+    .addEventListener(
+        'click',
+        function(e) {
+
+            if (
+                e.target === this
+            ) {
+
+                closeModal();
+
+            }
+
+        }
+    );
+
+
+document
+    .getElementById('bulkModal')
+    .addEventListener(
+        'click',
+        function(e) {
+
+            if (
+                e.target === this
+            ) {
+
+                closeBulkModal();
+
+            }
+
+        }
+    );
+
+
+/* =====================================================
+   START
+   ===================================================== */
+
+window.addEventListener(
+    'DOMContentLoaded',
+    initDashboard
+);
+
+</script>
+
+</body>
+</html>
