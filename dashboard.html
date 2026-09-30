@@ -1824,6 +1824,192 @@
     color: var(--gray);
     font-weight: 600;
 }
+/* =================================================
+   ESTABLISHMENT PROFILE (double-click view)
+   ================================================= */
+
+tbody tr.row-clickable {
+    cursor: pointer;
+}
+
+.profile-modal-box {
+    max-width: 1150px;
+}
+
+.profile-header-id {
+    font-size: 13px;
+    color: var(--gray);
+    margin-top: 4px;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.profile-card {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--pc-border);
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+
+.profile-card-head {
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--pc-headbg);
+}
+
+.profile-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--pc-main);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.profile-card-title {
+    flex: 1;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--pc-dark);
+}
+
+.profile-card-badge {
+    text-align: right;
+}
+
+.profile-card-badge .num {
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--pc-dark);
+    display: block;
+    line-height: 1.1;
+}
+
+.profile-card-badge .lbl {
+    font-size: 10px;
+    color: var(--pc-main);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.profile-card-body {
+    padding: 4px 18px 10px;
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.profile-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+}
+
+.profile-row:last-child {
+    border-bottom: none;
+}
+
+.profile-row.highlight {
+    background: var(--pc-headbg);
+    margin: 0 -18px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border-bottom: none;
+}
+
+.profile-row-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--pc-headbg);
+    color: var(--pc-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.profile-row.highlight .profile-row-icon {
+    background: var(--pc-main);
+    color: #fff;
+}
+
+.profile-label {
+    color: var(--gray);
+    font-weight: 600;
+    flex: 1;
+}
+
+.profile-value {
+    text-align: right;
+    word-break: break-word;
+    max-width: 55%;
+}
+
+.profile-row.highlight .profile-value {
+    font-weight: 700;
+    color: var(--pc-dark);
+}
+
+.profile-missing {
+    padding: 34px 16px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.profile-missing i {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 8px;
+    color: #d1d5db;
+}
+
+/* per-module color themes */
+
+.profile-card.theme-blue {
+    --pc-main: #3b6fd8;
+    --pc-headbg: #eff6ff;
+    --pc-border: #dbeafe;
+    --pc-dark: #1e3a8a;
+}
+
+.profile-card.theme-green {
+    --pc-main: #2f9e5b;
+    --pc-headbg: #ecfdf5;
+    --pc-border: #d1fae5;
+    --pc-dark: #065f46;
+}
+
+.profile-card.theme-purple {
+    --pc-main: #7c5cdb;
+    --pc-headbg: #f5f3ff;
+    --pc-border: #e9e3fb;
+    --pc-dark: #4c1d95;
+}
+
+.profile-card.theme-orange {
+    --pc-main: #f59e0b;
+    --pc-headbg: #fffbeb;
+    --pc-border: #fde68a;
+    --pc-dark: #92400e;
+}
+
         /* =================================================
            MOBILE
            ================================================= */
@@ -2067,7 +2253,7 @@
 
                 <i class="fas fa-building"></i>
 
-                <span>Master ESTB. List</span>
+                <span>Master Establishment List</span>
 
             </a>
 
@@ -2172,7 +2358,20 @@
         </div>
 
 
-        <div class="top-actions">
+                <div class="top-actions">
+
+            <button
+                class="btn btn-export"
+                id="consolidatedReportBtn"
+                onclick="downloadConsolidatedReport()"
+                style="display:none;"
+            >
+
+                <i class="fas fa-file-excel"></i>
+
+                Download Consolidated Report
+
+            </button>
 
             <button
                 class="btn btn-primary"
@@ -2401,11 +2600,7 @@
 
                     <div><strong>Click to select Excel file</strong></div>
 
-                    <p>
-                        .xlsx, .xls or .csv &nbsp;•&nbsp;
-                        Columns must match the Master DBT format
-                        (EstablishmentID required)
-                    </p>
+                                        <p id="bulkHint"></p>
 
                 </div>
 
@@ -2566,7 +2761,64 @@
 
 </div>
 
+<!-- =====================================================
+     ESTABLISHMENT PROFILE (double-click, admin only)
+     ===================================================== -->
 
+<div
+    class="modal"
+    id="profileModal"
+>
+
+    <div class="modal-box profile-modal-box">
+
+        <div class="modal-header">
+
+            <div>
+
+                <h2 id="profileModalTitle">
+                    Establishment Details
+                </h2>
+
+                <div
+                    class="profile-header-id"
+                    id="profileModalSubtitle"
+                ></div>
+
+            </div>
+
+            <button
+                class="close-btn"
+                onclick="closeProfileModal()"
+            >
+                &times;
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div
+                class="profile-grid"
+                id="profileModalBody"
+            ></div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                class="btn btn-secondary"
+                onclick="closeProfileModal()"
+            >
+                Close
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 <script>
 
 /* =====================================================
@@ -2627,6 +2879,7 @@ let bulkNotFoundCount = 0;  // EstablishmentID not present in master data + blan
 let bulkNewEstablishments = []; // {id, name} list not found in Master ESTB. List
 
 let bulkPreviewRows = [];   // first 5 raw rows for preview table
+let bulkInvalidCount = 0;   // required data missing / wrong sector (add mode)
 
 
 /* =====================================================
@@ -2651,6 +2904,8 @@ const SHEET_CONFIG = {
         icon: 'fa-building',
         allowAdd: true,
         allowExport: true,
+        allowBulkUpload: true,
+        bulkMode: 'add',
         filterFields: ['State', 'Sector (CSP)', 'District'],
         lockedFields: []
     },
@@ -2687,7 +2942,7 @@ const SHEET_CONFIG = {
         /* ONLY this column can be edited (edit form + bulk upload).
            Spelling must match the sheet header exactly. */
         bulkEditableFields: [
-            'Athurization'
+            'Authurization'
         ]
     },
     dbt: {
@@ -2944,6 +3199,16 @@ function applyMenuVisibility() {
             }
 
         });
+
+    const reportBtn =
+        document.getElementById('consolidatedReportBtn');
+
+    if (reportBtn) {
+
+        reportBtn.style.display =
+            isAdminUser() ? 'inline-flex' : 'none';
+
+    }
 
 }
 
@@ -4781,12 +5046,15 @@ function createTable(
     `;
 
 
+        const canProfile = isAdminUser();
+
     data.forEach(function(row, index) {
 
         html += `
 
             <tr
                 data-search-row="${index}"
+                ${canProfile ? `class="row-clickable" ondblclick="handleRowDblClick('${module}', ${index})"` : ''}
             >
 
         `;
@@ -5175,8 +5443,8 @@ function applyRowFilters(module) {
 
     const blankOn = !!blankFilterState[module];
 
-    const blankKeys = blankOn
-        ? (config.bulkEditableFields || BLANK_CHECK_FIELDS)
+        const blankKeys = blankOn
+        ? effectiveEditableFields(module, Object.keys(data[0] || {}))
             .map(function(f) { return resolveField(data, f); })
             .filter(Boolean)
         : [];
@@ -5291,7 +5559,89 @@ function toggleBlankFilter(module) {
    search) is active, only those filtered rows go into
    the file. With no filter active, every row exports.
    ===================================================== */
+/* =====================================================
+   CONSOLIDATED REPORT (Admin only)
+   =====================================================
+   Chaaron sheets — Master ESTB, Master Contracts,
+   Master Authu., Master DBT — ek hi Excel file me
+   alag-alag tabs ke roop me download hoti hain.
+   Har sheet ke poore records jaate hain (koi filter
+   ya search yahan lagu nahi hota).
+   ===================================================== */
 
+function downloadConsolidatedReport() {
+
+    if (!cachedData) {
+
+        showAlertBox('Data is still loading, please try again in a moment.', 'warning');
+
+        return;
+
+    }
+
+    const modules = ['establishments', 'contracts', 'authorizations', 'dbt'];
+
+    const workbook = XLSX.utils.book_new();
+
+    let totalRecords = 0;
+
+    modules.forEach(function(module) {
+
+        const config = SHEET_CONFIG[module];
+
+        const rows = cachedData[config.key] || [];
+
+        totalRecords += rows.length;
+
+        const cleanRows = rows.map(function(row) {
+
+            const record = {};
+
+            Object.keys(row).forEach(function(header) {
+
+                if (header === '_rowNumber') {
+                    return;
+                }
+
+                record[header] = row[header] ?? '';
+
+            });
+
+            return record;
+
+        });
+
+        const worksheet =
+            cleanRows.length
+                ? XLSX.utils.json_to_sheet(cleanRows)
+                : XLSX.utils.aoa_to_sheet([['No data available']]);
+
+        const sheetLabel =
+            (config.sheetName || module).slice(0, 31);
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetLabel);
+
+    });
+
+    if (!totalRecords) {
+
+        showAlertBox('No data available to include in the report.', 'warning');
+
+        return;
+
+    }
+
+    const dateStamp =
+        new Date().toISOString().slice(0, 10);
+
+    XLSX.writeFile(workbook, 'Consolidated_Report_' + dateStamp + '.xlsx');
+
+}
+
+
+/* =====================================================
+   EXPORT TO EXCEL
+    ===================================================== */
 function exportTableToExcel(module) {
 
     const table =
@@ -5434,7 +5784,7 @@ function openEditModal(module, index) {
 
     const lockedFields = config.lockedFields || [];
 
-    const editableOnly = config.bulkEditableFields || null;
+    const editableOnly = effectiveEditableFields(module, headers);
 
     let formHTML = '<div class="form-grid">';
 
@@ -5463,6 +5813,116 @@ function openEditModal(module, index) {
     document.getElementById('dataModal').classList.add('show');
 }
 /* =====================================================
+   MASTER ESTB — DYNAMIC FIELDS
+   =====================================================
+   Sheet me jo bhi columns hon (naye jode gaye columns
+   samet), yahan se hamesha uthaye jaate hain. Naye
+   column ke liye koi special formatting nahi lagti —
+   plain text field ban jaata hai. Jaana-pehchaana
+   column (Sr.No, Sector, ID, Name, District, State) ke
+   liye purani wali formatting/dropdown wahi rehti hai.
+   ===================================================== */
+
+function establishmentHeaders() {
+
+    const data =
+        cachedData && cachedData.masterEstb || [];
+
+    if (data.length) {
+
+        return Object.keys(data[0]).filter(function(h) {
+            return h !== '_rowNumber';
+        });
+
+    }
+
+    return [
+        'Sr. No.', 'Sector (CSP)', 'EstablishmentID',
+        'Name Of The Establishment', 'District', 'State'
+    ];
+
+}
+
+
+function estbAddFieldHTML(header, nextSerial) {
+
+    const norm = normKey(header);
+
+    if (norm === normKey('Sr. No.')) {
+
+        return `
+            <div class="field">
+                <label>${escapeHTML(header)}</label>
+                <input type="text" data-field="${escapeHTML(header)}" value="${nextSerial}" readonly>
+            </div>
+        `;
+
+    }
+
+    if (norm === normKey('Sector (CSP)')) {
+
+        return `
+            <div class="field">
+                <label>${escapeHTML(header)}</label>
+                <select data-field="${escapeHTML(header)}">
+                    <option value="">-- Select --</option>
+                    <option value="C">C</option>
+                    <option value="P">P</option>
+                    <option value="S">S</option>
+                </select>
+            </div>
+        `;
+
+    }
+
+    if (norm === normKey('EstablishmentID')) {
+
+        return `
+            <div class="field">
+                <label>${escapeHTML(header)}</label>
+                <input type="text" data-field="${escapeHTML(header)}" value=""
+                    oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
+            </div>
+        `;
+
+    }
+
+    if (norm === normKey('Name Of The Establishment')) {
+
+        return `
+            <div class="field">
+                <label>${escapeHTML(header)}</label>
+                <input type="text" data-field="${escapeHTML(header)}" value=""
+                    oninput="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1)">
+            </div>
+        `;
+
+    }
+
+    if (norm === normKey('District') || norm === normKey('State')) {
+
+        return `
+            <div class="field">
+                <label>${escapeHTML(header)}</label>
+                <input type="text" data-field="${escapeHTML(header)}" value=""
+                    oninput="this.value = this.value.toUpperCase()">
+            </div>
+        `;
+
+    }
+
+    /* naya / anjaana column — plain text field */
+
+    return `
+        <div class="field">
+            <label>${escapeHTML(header)}</label>
+            <input type="text" data-field="${escapeHTML(header)}" value="">
+        </div>
+    `;
+
+}
+
+/* =====================================================
    OPEN ADD MODAL
    ===================================================== */
 function openAddModal(module) {
@@ -5481,55 +5941,20 @@ function openAddModal(module) {
 
     document.getElementById('modalTitle').textContent = 'Add - ' + config.title;
 
-    /* ---------- SPECIAL FORM: sirf Master ESTB ke liye ---------- */
+        /* ---------- Master ESTB: sabhi columns dynamic ---------- */
+
     if (module === 'establishments') {
 
         const nextSerial = data.length + 1;
 
-        const formHTML = `
-            <div class="form-grid">
-
-                <div class="field">
-                    <label>Sr. No.</label>
-                    <input type="text" data-field="Sr. No." value="${nextSerial}" readonly>
-                </div>
-
-                <div class="field">
-                    <label>Sector (CSP)</label>
-                    <select data-field="Sector (CSP)">
-                        <option value="">-- Select --</option>
-                        <option value="C">C</option>
-                        <option value="P">P</option>
-                        <option value="S">S</option>
-                    </select>
-                </div>
-
-                <div class="field">
-                    <label>EstablishmentID</label>
-                    <input type="text" data-field="EstablishmentID" value=""
-                        oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
-                </div>
-
-                <div class="field">
-                    <label>Name Of The Establishment</label>
-                    <input type="text" data-field="Name Of The Establishment" value=""
-                        oninput="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1)">
-                </div>
-
-                <div class="field">
-                    <label>District</label>
-                    <input type="text" data-field="District" value=""
-                        oninput="this.value = this.value.toUpperCase()">
-                </div>
-
-                <div class="field">
-                    <label>State</label>
-                    <input type="text" data-field="State" value=""
-                        oninput="this.value = this.value.toUpperCase()">
-                </div>
-
-            </div>
-        `;
+        const formHTML =
+            '<div class="form-grid">' +
+            establishmentHeaders()
+                .map(function(header) {
+                    return estbAddFieldHTML(header, nextSerial);
+                })
+                .join('') +
+            '</div>';
 
         document.getElementById('modalBody').innerHTML = formHTML;
         document.getElementById('dataModal').classList.add('show');
@@ -5567,6 +5992,216 @@ function openAddModal(module) {
     document.getElementById('dataModal').classList.add('show');
 }
 
+/* =====================================================
+   ESTABLISHMENT PROFILE (double-click view, admin only)
+   =====================================================
+   Row par double-click karne se, EstablishmentID se
+   match karke chaaron sheets — Master ESTB, Master
+   Contracts, Master Authu., Master DBT — ka poora
+   record ek hi window me dikhta hai.
+   ===================================================== */
+
+function handleRowDblClick(module, index) {
+
+    if (!isAdminUser()) {
+        return;
+    }
+
+    const config = SHEET_CONFIG[module];
+
+    const row = (cachedData[config.key] || [])[index];
+
+    if (!row) {
+        return;
+    }
+
+    const id = String(row['EstablishmentID'] || '').trim();
+
+    if (!id) {
+
+        showAlertBox(
+            'This record has no EstablishmentID, so a consolidated view is not available.',
+            'warning'
+        );
+
+        return;
+
+    }
+
+    openEstablishmentProfile(id);
+
+}
+
+
+const PROFILE_THEMES = {
+    establishments: 'blue',
+    contracts: 'green',
+    authorizations: 'purple',
+    dbt: 'orange'
+};
+
+const PROFILE_FIELD_ICONS = [
+    { test: /^sr\.?\s*no\.?$/i, icon: 'fa-hashtag' },
+    { test: /sector/i, icon: 'fa-layer-group' },
+    { test: /establishmentid/i, icon: 'fa-id-badge' },
+    { test: /name of the establishment/i, icon: 'fa-building' },
+    { test: /district/i, icon: 'fa-location-dot' },
+    { test: /^state$/i, icon: 'fa-map-pin' },
+    { test: /^fy\s*\d{2}\s*-\s*\d{2}/i, icon: 'fa-calendar' },
+    { test: /dbt status/i, icon: 'fa-circle-check' },
+    { test: /athurization|authorization/i, icon: 'fa-shield-halved' }
+];
+
+function fieldIconFor(header) {
+
+    const match = PROFILE_FIELD_ICONS.find(function(entry) {
+        return entry.test.test(header);
+    });
+
+    return match ? match.icon : 'fa-circle-dot';
+
+}
+
+
+function profileCardHTML(module, config, row, totalRecords) {
+
+    const theme = PROFILE_THEMES[module] || 'blue';
+
+    const editableFields = config.bulkEditableFields || [];
+
+    if (!row) {
+
+        return `
+            <div class="profile-card theme-${theme}">
+
+                <div class="profile-card-head">
+                    <div class="profile-card-icon"><i class="fas ${config.icon}"></i></div>
+                    <div class="profile-card-title">${escapeHTML(config.title)}</div>
+                    <div class="profile-card-badge">
+                        <span class="num">${fmtNum(totalRecords)}</span>
+                        <span class="lbl">Total Records</span>
+                    </div>
+                </div>
+
+                <div class="profile-missing">
+                    <i class="fas fa-circle-exclamation"></i>
+                    No record in ${escapeHTML(config.title)}
+                </div>
+
+            </div>
+        `;
+
+    }
+
+    const headers = Object.keys(row).filter(function(h) {
+        return h !== '_rowNumber';
+    });
+
+    const rowsHTML = headers.map(function(h) {
+
+        const value = String(row[h] === null || row[h] === undefined ? '' : row[h]).trim();
+
+        const isHighlight = editableFields.includes(h);
+
+        return `
+            <div class="profile-row${isHighlight ? ' highlight' : ''}">
+                <div class="profile-row-icon"><i class="fas ${fieldIconFor(h)}"></i></div>
+                <div class="profile-label">${escapeHTML(h)}</div>
+                <div class="profile-value">${value ? escapeHTML(value) : '—'}</div>
+            </div>
+        `;
+
+    }).join('');
+
+    return `
+        <div class="profile-card theme-${theme}">
+
+            <div class="profile-card-head">
+                <div class="profile-card-icon"><i class="fas ${config.icon}"></i></div>
+                <div class="profile-card-title">${escapeHTML(config.title)}</div>
+                <div class="profile-card-badge">
+                    <span class="num">${fmtNum(totalRecords)}</span>
+                    <span class="lbl">Total Records</span>
+                </div>
+            </div>
+
+            <div class="profile-card-body">
+                ${rowsHTML}
+            </div>
+
+        </div>
+    `;
+
+}
+
+
+function openEstablishmentProfile(id) {
+
+    if (!cachedData) {
+        return;
+    }
+
+    const targetId = normId(id);
+
+    const modules = ['establishments', 'contracts', 'authorizations', 'dbt'];
+
+    const matches = {};
+
+    let displayName = '';
+
+    modules.forEach(function(module) {
+
+        const config = SHEET_CONFIG[module];
+
+        const rows = cachedData[config.key] || [];
+
+        const match = rows.find(function(r) {
+            return normId(r['EstablishmentID']) === targetId;
+        });
+
+        matches[module] = match || null;
+
+        if (!displayName && match && match['Name Of The Establishment']) {
+            displayName = match['Name Of The Establishment'];
+        }
+
+    });
+
+    document.getElementById('profileModalTitle').textContent =
+        displayName || 'Establishment Details';
+
+    document.getElementById('profileModalSubtitle').textContent =
+        'EstablishmentID: ' + id;
+
+    const body =
+        document.getElementById('profileModalBody');
+
+    body.innerHTML =
+        modules
+            .map(function(module) {
+
+                const config = SHEET_CONFIG[module];
+
+                const totalRecords = (cachedData[config.key] || []).length;
+
+                return profileCardHTML(module, config, matches[module], totalRecords);
+
+            })
+            .join('');
+
+    document.getElementById('profileModal').classList.add('show');
+
+}
+
+
+function closeProfileModal() {
+
+    document
+        .getElementById('profileModal')
+        .classList
+        .remove('show');
+
+}
 /* =====================================================
    CLOSE MODAL
    ===================================================== */
@@ -5632,7 +6267,48 @@ function closeCustomAlert() {
         .remove('show');
 
 }
+/* =====================================================
+   DBT — DYNAMIC FY COLUMNS
+   =====================================================
+   "FY 24-25 Paydone", "FY 25-26 pending" jaise pattern
+   wale columns ko dynamic editable maana jaata hai,
+   chahe wo bulkEditableFields list me manually likhe
+   hon ya naye add hue hon. Isse "FY 26-27" ke aage
+   "FY 27-28" jaisa naya column sheet me aate hi apne
+   aap edit form + bulk upload dono me editable ban
+   jaata hai.
+   ===================================================== */
 
+const DBT_FY_COLUMN_PATTERN = /^FY\s*\d{2}\s*-\s*\d{2}\s*(paydone|pending)$/i;
+
+function isDynamicEditableField(module, header) {
+
+    if (module === 'dbt' && DBT_FY_COLUMN_PATTERN.test(header)) {
+        return true;
+    }
+
+    return false;
+
+}
+
+
+function effectiveEditableFields(module, headers) {
+
+    const config = SHEET_CONFIG[module];
+
+    if (!config.bulkEditableFields) {
+        return null;
+    }
+
+    const fromConfig = config.bulkEditableFields;
+
+    const fromPattern = headers.filter(function(h) {
+        return isDynamicEditableField(module, h) && !fromConfig.includes(h);
+    });
+
+    return fromConfig.concat(fromPattern);
+
+}
 
 /* =====================================================
    BULK UPLOAD — HELPERS
@@ -5713,6 +6389,7 @@ function openBulkUploadModal(module) {
     bulkNewEstablishments = [];
 
     bulkPreviewRows = [];
+    bulkInvalidCount = 0;
 
 
     document.getElementById('bulkModalTitle').textContent =
@@ -5731,7 +6408,12 @@ function openBulkUploadModal(module) {
         </button>
     `;
 
-
+    document.getElementById('bulkHint').textContent =
+        SHEET_CONFIG[module].bulkMode === 'add'
+            ? '.xlsx, .xls or .csv • Columns: Sector (CSP), EstablishmentID, Name Of The Establishment, District, State'
+            : '.xlsx, .xls or .csv • Columns must match the ' +
+              SHEET_CONFIG[module].title +
+              ' format (EstablishmentID required)';
     switchBulkStep('bulkStepChoose');
 
 
@@ -5830,8 +6512,201 @@ function handleBulkFileSelect(event) {
     reader.readAsBinaryString(file);
 
 }
+/* =====================================================
+   BULK UPLOAD — ADD MODE (Master ESTB. List)
+   =====================================================
+   Nayi rows add hoti hain. Skip hone wali rows:
+   - EstablishmentID sheet me pehle se hai (case-insensitive)
+   - Same ID file me dobara aaye (pehli wali rakhi jaati hai)
+   - ID / Name khali, ya Sector C, P, S me se koi nahi
+   ===================================================== */
+
+function processBulkAddRows(rawRows) {
+
+    const config = SHEET_CONFIG[bulkModule];
+
+    const masterData = cachedData[config.key] || [];
+
+    const idColumnPresent =
+        Object.keys(rawRows[0]).some(function(h) {
+            return normKey(h) === normKey('EstablishmentID');
+        });
+
+    if (!idColumnPresent) {
+
+        showAlertBox(
+            'The file must have an "EstablishmentID" column.',
+            'error'
+        );
+
+        return;
+
+    }
 
 
+    const sheetHeaders = establishmentHeaders();
+
+    const headerMap = {};
+
+    sheetHeaders.forEach(function(h) {
+        headerMap[normKey(h)] = h;
+    });
+
+
+    /* existing IDs + last Sr. No. */
+
+    const existingIds = {};
+
+    let maxSr = 0;
+
+    masterData.forEach(function(r) {
+
+        const id = normId(r['EstablishmentID']);
+
+        if (id) {
+            existingIds[id] = true;
+        }
+
+        const n = parseInt(r['Sr. No.'], 10);
+
+        if (!isNaN(n) && n > maxSr) {
+            maxSr = n;
+        }
+
+    });
+
+    if (!maxSr) {
+        maxSr = masterData.length;
+    }
+
+
+    const sectorMap = {
+        C: 'C', P: 'P', S: 'S',
+        CENTRAL: 'C', PRIVATE: 'P', STATE: 'S'
+    };
+
+    const seen = {};
+
+    const toAdd = [];
+
+    let duplicateCount = 0;
+
+    let invalidCount = 0;
+
+
+    rawRows.forEach(function(excelRow) {
+
+        const mapped = {};
+
+        Object.keys(excelRow).forEach(function(h) {
+
+            const key = headerMap[normKey(h)];
+
+            if (key) {
+                mapped[key] = excelRow[h];
+            }
+
+        });
+
+        /* core identity fields — same rules jo manual Add form me hain */
+
+        const id = String(mapped['EstablishmentID'] || '')
+            .replace(/[^A-Za-z0-9]/g, '')
+            .toUpperCase();
+
+        let name = String(mapped['Name Of The Establishment'] || '').trim();
+
+        name = name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
+
+        const sector = sectorMap[
+            String(mapped['Sector (CSP)'] || '').trim().toUpperCase()
+        ];
+
+        if (!id || !name || !sector) {
+
+            invalidCount++;
+
+            return;
+
+        }
+
+        if (existingIds[id] || seen[id]) {
+
+            duplicateCount++;
+
+            return;
+
+        }
+
+        seen[id] = true;
+
+        maxSr++;
+
+        /* row data — sheet ke SAARE (naye samet) columns ke liye */
+
+        const rowData = {};
+
+        sheetHeaders.forEach(function(header) {
+
+            const norm = normKey(header);
+
+            if (norm === normKey('Sr. No.')) {
+
+                rowData[header] = maxSr;
+
+            } else if (norm === normKey('Sector (CSP)')) {
+
+                rowData[header] = sector;
+
+            } else if (norm === normKey('EstablishmentID')) {
+
+                rowData[header] = id;
+
+            } else if (norm === normKey('Name Of The Establishment')) {
+
+                rowData[header] = name;
+
+            } else if (norm === normKey('District') || norm === normKey('State')) {
+
+                rowData[header] =
+                    String(mapped[header] || '').trim().toUpperCase();
+
+            } else {
+
+                /* naya / anjaana column — jo excel me mila wahi, warna khali */
+
+                rowData[header] =
+                    mapped[header] !== undefined
+                        ? String(mapped[header]).trim()
+                        : '';
+
+            }
+
+        });
+
+        toAdd.push({
+            establishmentId: id,
+            data: rowData
+        });
+
+    });
+
+
+    bulkToUpdate = toAdd;
+
+    bulkDuplicateCount = duplicateCount;
+
+    bulkInvalidCount = invalidCount;
+
+    bulkNewEstablishments = [];
+
+    bulkNotFoundCount = 0;
+
+    bulkPreviewRows = rawRows.slice(0, 5);
+
+    renderBulkPreviewStep(sheetHeaders, rawRows.length);
+
+}
 /* =====================================================
    BULK UPLOAD — MAP + DEDUPE + MATCH
    ===================================================== */
@@ -5840,6 +6715,11 @@ function processBulkRows(rawRows) {
 
     const config =
         SHEET_CONFIG[bulkModule];
+
+            if (config.bulkMode === 'add') {
+        processBulkAddRows(rawRows);
+        return;
+    }
 
     const masterData =
         cachedData[config.key] || [];
@@ -5901,8 +6781,8 @@ function processBulkRows(rawRows) {
        WHITELIST — only those exact columns can ever be written
        by a bulk upload, no matter what else is in the file. */
 
-    const editableFields =
-        config.bulkEditableFields || null;
+     const editableFields =
+        effectiveEditableFields(bulkModule, sheetHeaders);
 
 
     /* idVal -> { rowNumber, data, establishmentId } — later rows for the
@@ -6086,16 +6966,24 @@ function processBulkRows(rawRows) {
    ===================================================== */
 
 function renderBulkPreviewStep(sheetHeaders, totalRows) {
-
     const chips =
         document.getElementById('bulkSummaryChips');
 
-    chips.innerHTML = `
-        <span class="chip chip-total">Total rows: ${totalRows}</span>
-        <span class="chip chip-update">Will update: ${bulkToUpdate.length}</span>
-        <span class="chip chip-dup">Duplicate rows (values replaced): ${bulkDuplicateCount}</span>
-        <span class="chip chip-notfound">New / not in Master ESTB (skipped): ${bulkNewEstablishments.length}</span>
-    `;
+        const isAdd = SHEET_CONFIG[bulkModule].bulkMode === 'add';
+
+    chips.innerHTML = isAdd
+        ? `
+            <span class="chip chip-total">Total rows: ${totalRows}</span>
+            <span class="chip chip-update">Will add: ${bulkToUpdate.length}</span>
+            <span class="chip chip-dup">Duplicate ID (skipped): ${bulkDuplicateCount}</span>
+            <span class="chip chip-notfound">Invalid rows (skipped): ${bulkInvalidCount}</span>
+        `
+        : `
+            <span class="chip chip-total">Total rows: ${totalRows}</span>
+            <span class="chip chip-update">Will update: ${bulkToUpdate.length}</span>
+            <span class="chip chip-dup">Duplicate rows (values replaced): ${bulkDuplicateCount}</span>
+            <span class="chip chip-notfound">New / not in Master ESTB (skipped): ${bulkNewEstablishments.length}</span>
+        `;
 
 
     const warningBox =
@@ -6213,6 +7101,9 @@ async function confirmBulkUpload() {
     const config =
         SHEET_CONFIG[bulkModule];
 
+    const isAdd =
+        config.bulkMode === 'add';
+
     document.getElementById('bulkModalFooter').innerHTML = '';
 
     switchBulkStep('bulkStepProgress');
@@ -6235,20 +7126,24 @@ async function confirmBulkUpload() {
 
         try {
 
+            const payload = {
+
+                action: isAdd ? 'addRow' : 'updateRow',
+
+                email: currentUser.userId,
+
+                sheetName: config.sheetName,
+
+                data: item.data
+
+            };
+
+            if (!isAdd) {
+                payload.rowNumber = item.rowNumber;
+            }
+
             const response =
-                await postRequest({
-
-                    action: 'updateRow',
-
-                    email: currentUser.userId,
-
-                    sheetName: config.sheetName,
-
-                    rowNumber: item.rowNumber,
-
-                    data: item.data
-
-                });
+                await postRequest(payload);
 
 
             if (response && response.success) {
@@ -6303,16 +7198,21 @@ function showBulkResult(successCount, failCount) {
     const chips =
         document.getElementById('bulkResultChips');
 
-    chips.innerHTML = `
-        <span class="chip chip-update">Updated (Establishments): ${successCount}</span>
-        <span class="chip chip-dup">Duplicate rows replaced: ${bulkDuplicateCount}</span>
-        <span class="chip chip-notfound">New / not in Master ESTB (skipped): ${bulkNewEstablishments.length}</span>
-        ${
-            failCount
-            ? `<span class="chip" style="background:#fee2e2;color:#b91c1c;">Failed: ${failCount}</span>`
-            : ''
-        }
-    `;
+        const isAdd = SHEET_CONFIG[bulkModule].bulkMode === 'add';
+
+    chips.innerHTML = isAdd
+        ? `
+            <span class="chip chip-update">Added: ${successCount}</span>
+            <span class="chip chip-dup">Duplicate ID (skipped): ${bulkDuplicateCount}</span>
+            <span class="chip chip-notfound">Invalid rows (skipped): ${bulkInvalidCount}</span>
+            ${failCount ? `<span class="chip" style="background:#fee2e2;color:#b91c1c;">Failed: ${failCount}</span>` : ''}
+        `
+        : `
+            <span class="chip chip-update">Updated (Establishments): ${successCount}</span>
+            <span class="chip chip-dup">Duplicate rows replaced: ${bulkDuplicateCount}</span>
+            <span class="chip chip-notfound">New / not in Master ESTB (skipped): ${bulkNewEstablishments.length}</span>
+            ${failCount ? `<span class="chip" style="background:#fee2e2;color:#b91c1c;">Failed: ${failCount}</span>` : ''}
+        `;
 
 
     document.getElementById('bulkModalFooter').innerHTML = `
@@ -6746,6 +7646,22 @@ document
         }
     );
 
+document
+    .getElementById('profileModal')
+    .addEventListener(
+        'click',
+        function(e) {
+
+            if (
+                e.target === this
+            ) {
+
+                closeProfileModal();
+
+            }
+
+        }
+    );
 
 /* =====================================================
    START
